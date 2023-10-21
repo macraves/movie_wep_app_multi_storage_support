@@ -11,6 +11,8 @@ class ApiErrors(Exception):
 
 
 class AppApi:
+    """Further more needs to sport user object"""
+
     def __init__(self, user):
         self.app = flask.Flask(__name__)
         self.user = user
@@ -23,3 +25,6 @@ def test_api():
     var = AppApi("caner")
     var.app.add_url_rule("/", view_func=var.index, methods=["GET"])
     var.app.run(debug=True)
+
+
+# test_api()
