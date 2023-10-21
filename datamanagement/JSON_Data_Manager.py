@@ -1,6 +1,6 @@
 """This module is used to store movies in a json file."""
 import json
-from data_manager_interface import DataManagmentInterface
+from storage_inheritance import DataManagmentInterface
 
 
 class JsonStorageErrors(Exception):
@@ -45,3 +45,13 @@ class JsonStorage(DataManagmentInterface):
         data = self._read_file()
         user = data["users"][user_id]
         return user["movies"]
+
+
+def test():
+    """Test Json object"""
+    var = JsonStorage("test.json")
+    data = var.get_all_users()
+    print(data)
+
+
+# test()

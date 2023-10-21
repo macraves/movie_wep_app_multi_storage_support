@@ -1,6 +1,7 @@
 """This module is used to store movies in a json file."""
 import csv
-from data_manager_interface import DataManagmentInterface
+import json  # for test
+from storage_inheritance import DataManagmentInterface
 
 
 class CsvStorageErrors(Exception):
@@ -51,7 +52,7 @@ class CsvStorage(DataManagmentInterface):
                         "version": data["version"],
                         "id": key,
                         "users": data["users"][key].get("user"),
-                        "movies": data["users"][key].get("movies"),
+                        "movies": data["users"][key]["movies"].get("name"),
                     }
                 )
 
@@ -64,3 +65,21 @@ class CsvStorage(DataManagmentInterface):
         data = self._read_file()
         user = data["users"][user_id]
         return user["movies"]
+
+    def save_csv(self, data):
+        """Write and save method for csv"""
+        if not isinstance(data, dict):
+            raise CsvStorageErrors("Unknown file type, json object expected")
+        self._write_file(data)
+
+    def load_csv(self):
+        """Load csv file"""
+        return self._read_file()
+
+
+def test():
+    """test for class"""
+    with open("test.json", "r", encoding="utf-8") as f:
+        data = json.load(f)
+    var = CsvStorage("test.csv")
+    var.save_csv(data)
