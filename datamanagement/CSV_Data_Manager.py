@@ -1,7 +1,7 @@
 """This module is used to store movies in a json file."""
 import csv
 import json  # for test
-from storage_inheritance import DataManagmentInterface
+from datamanagement.storage_inheritance import DataManagmentInterface
 
 
 class CsvStorageErrors(Exception):
@@ -29,7 +29,12 @@ class CsvStorage(DataManagmentInterface):
                     # Maybe it will get from movies coloumn, try and see
                     data["version"] = row["version"]
                     data["users"].update(
-                        {row["id"]: {"user": row["users"], "movies": "movies"}}
+                        {
+                            row["id"]: {
+                                "user": row["users"],
+                                "movies": row["movies"].split(","),
+                            }
+                        }
                     )
 
             return data
@@ -47,12 +52,14 @@ class CsvStorage(DataManagmentInterface):
             writer = csv.DictWriter(csv_file, fieldnames=fieldnames)
             writer.writeheader()
             for key in data["users"]:
+                movies = data["users"][key]["movies"]
+                movies_title = ",".join(movie.get("Title", "") for movie in movies)
                 writer.writerow(
                     {
                         "version": data["version"],
                         "id": key,
                         "users": data["users"][key].get("user"),
-                        "movies": data["users"][key]["movies"].get("name"),
+                        "movies": movies_title,
                     }
                 )
 

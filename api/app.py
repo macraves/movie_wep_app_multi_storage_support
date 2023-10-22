@@ -18,7 +18,7 @@ class AppApi:
         self.user = user
 
     def index(self):
-        return f"Hello, {self.user}!"
+        return f"Hello, {self.user.name}!"
 
 
 def test_api():

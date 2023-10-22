@@ -1,6 +1,6 @@
 """This module is used to store movies in a json file."""
 import json
-from storage_inheritance import DataManagmentInterface
+from datamanagement.storage_inheritance import DataManagmentInterface
 
 
 class JsonStorageErrors(Exception):
