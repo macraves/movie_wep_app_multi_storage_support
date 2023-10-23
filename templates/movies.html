@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>Movies</title>
+	</head>
+	<body>
+		<h1>Movies</h1>
+		{% for movie_id, movie in movies.items() %} {% if movie %}
+		<h2>{{ movie["Title"] }}</h2>
+		<p>Director: {{ movie["Director"] }}</p>
+		<p>Year: {{ movie["Year"] }}</p>
+		<p>IMDb Rating: {{ movie["imdbRating"] }}</p>
+		<img src="{{ movie['Poster'] }}" alt="{{ movie['Title'] }} Poster" />
+		{% endif %} {% endfor %}
+	</body>
+</html>

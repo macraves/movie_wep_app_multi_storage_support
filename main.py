@@ -2,12 +2,11 @@
 from user.user_instance import User
 from datamanagement.JSON_Data_Manager import JsonStorage as JS
 from backend.request_movie import extract_movie_data
-from backend.user_app import 
 
 
 def user_sample():
     """Dictionary for test"""
-    userdata = {"id": "1", "name": "caner", "password": "12345"}
+    userdata = {"id": "3", "name": "embieva", "password": "12345"}
     return userdata
 
 
@@ -25,6 +24,17 @@ def set_user_with_json_instance():
     return user
 
 
+def add_user_in_json():
+    """Test to check JS instance"""
+    # Tested OK
+    userdata = {"name": "embieva", "password": "12345"}
+    user = User(userdata)
+    user.userdata["storage"] = JS()
+    user_storage = user.userdata["storage"]
+    user.get_id(user_storage)
+    user_storage.add_new_user(user.userdata)
+
+
 def get_user_movies_from_json():
     """Test to check JS instance"""
     # Tested OK
@@ -39,11 +49,14 @@ def get_user_movies_from_json():
 def test_adding_movie_in_user_list():
     """Test to adding a new movie"""
     # Test OK
-    movie = request_movie_data("The Matrix")
+    movie = request_movie_data("friends")
     user = set_user_with_json_instance()
     user_storage = user.userdata["storage"]
     user.userdata["movie"] = movie
     user_storage.add_movie_in_user_list(user.userdata)
+
+
+test_adding_movie_in_user_list()
 
 
 def test_delete_movie_in_user_list():
@@ -54,6 +67,3 @@ def test_delete_movie_in_user_list():
     user = set_user_with_json_instance()
     user_storage = user.userdata["storage"]
     user_storage.delete_movie_in_user_list(user.userdata, movie_id)
-
-
-
