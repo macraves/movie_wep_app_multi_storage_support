@@ -15,6 +15,6 @@ class DataManagmentInterface(ABC):
         pass
 
     @abstractmethod
-    def get_user_movies(self, user_id):
+    def get_user_movies(self, userdata):
         """Get all movies for given user"""
         pass

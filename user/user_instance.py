@@ -22,12 +22,12 @@ class User:
     registry_file = os.path.join(registry_dir, "registry.json")
 
     @staticmethod
-    def is_valid_userdata(userdata: str):
+    def is_valid_userdata(userdata: dict):
         """Validate username"""
         password = userdata["password"]
         if userdata["name"].strip() == "" or password.strip() == "":
             raise UserErrors("User entry cannot be empty.")
-        if not 4 < len(userdata["name"]) < 15:
+        if not 2 < len(userdata["name"]) < 15:
             raise UserErrors("User entry must be between 4 and 15 characters long.")
         if not 4 < len(password) < 6:
             raise UserErrors("Password must be between 4 and 12 characters long.")
@@ -40,6 +40,7 @@ class User:
         """Correct userdata"""
         userdata["name"] = userdata["name"].strip()
         userdata["password"] = str(userdata["password"]).strip()
+        return userdata
 
     def __init__(self, userdata: dict):
         """userdata = {"name": name, "password": password, "storage":"storage"}"""
@@ -78,9 +79,9 @@ class User:
     def is_password_match(self):
         """Check if password match"""
         users = self.load_records()
-        if not self.name in users:
+        if not self.userdata["name"] in users:
             return False
-        if self.password != users[self.name]:
+        if self.userdata["password"] != users[self.userdata["name"]]:
             return False
         return True
 

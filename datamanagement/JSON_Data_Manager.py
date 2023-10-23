@@ -1,7 +1,7 @@
 """This module is used to store movies in a json file."""
 
 import json
-from storage_inheritance import os, DataManagmentInterface as DMI
+from datamanagement.storage_inheritance import os, DataManagmentInterface as DMI
 
 
 class JsonStorageErrors(Exception):
@@ -36,8 +36,17 @@ class JsonStorage(DMI):
 
         if not os.path.exists(DMI.logs_dir):
             os.makedirs(DMI.logs_dir)
+        if not os.path.exists(self._filename):
+            with open(self._filename, "w", encoding="utf-8") as initiate:
+                json.dump({"version": 1.0, "users": {}}, initiate, indent=4)
         with open(self._filename, "w", encoding="utf-8") as handle:
             json.dump(data, handle, indent=4)
+
+    def find_user(self, userdata):
+        """Finds user by userdata unique id"""
+        data = self._read_file()
+        user_id = list(userdata.keys())[0]
+        return data["users"].get(user_id, False), user_id, data
 
     def get_all_users(self):
         """Get all users from storage"""
@@ -45,12 +54,12 @@ class JsonStorage(DMI):
         users = data["users"]
         return users
 
-    def get_user_movies(self, user):
+    def get_user_movies(self, userdata):
         """Get all movies for given user"""
-        data = self._read_file()
-        user_id = list(user.keys())[0]
-        user = data["users"][user_id]
-        return user["movies"]
+        user, data, user_id = self.find_user(userdata)
+        if user:
+            return data["users"][user_id]["movies"]
+        raise JsonStorageErrors("User or list of movies does not exist")
 
     def user_unique_id(self):
         """Iterate through users dictionary to find
@@ -71,12 +80,6 @@ class JsonStorage(DMI):
             "movies": {},
         }
         self._write_file(data=data)
-
-    def find_user(self, userdata):
-        """Finds user by userdata unique id"""
-        data = self._read_file()
-        user_id = list(userdata.keys())[0]
-        return data["users"].get(user_id, False), user_id, data
 
     def add_movie_in_user_list(self, userdata):
         """Find user by its id and get the size of movies list if exists to assign
@@ -106,18 +109,3 @@ class JsonStorage(DMI):
                     break
         data["users"][user_id["movies"]] = movies
         self._write_file(data)
-
-
-def test_json_storage():
-    """Create a user dictionary that gets its ID from user_id instance"""
-    # user = {"name": "caner", "movie": "Batman"}
-    user1 = {"1": {"name": "caner", "movie": "Batman"}}
-    storage = JsonStorage()
-    # user_id = storage.user_unique_id()
-    # user = {user_id: user}
-    # print(user)
-    # user_info = {user_id: user[user_id]["name"]}
-    # storage.add_new_user(user_info)
-    # print(storage.get_all_users())
-    # storage.add_movie_in_user_list(user1)
-    # print(storage.get_user_movies(user1))
