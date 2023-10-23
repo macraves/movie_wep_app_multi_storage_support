@@ -3,7 +3,8 @@ as json file.
 from user folder to chdir to basename"""
 import os
 import json
-from backend.app import AppApi
+
+# from backend.user_app import AppApi
 
 
 class UserErrors(Exception):
@@ -91,9 +92,9 @@ class User:
         user_id = storage.user_unique_id()
         self.userdata["id"] = str(user_id)
 
-    def get_api(self):
-        """Return API instance"""
-        return AppApi(self)
+    # def get_api(self):
+    #     """Return API instance"""
+    #     return AppApi(self)
 
     def frontend(self):
         """Return frontend instance"""
