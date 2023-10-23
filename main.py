@@ -16,7 +16,7 @@ def request_movie_data(movie_name):
     return extracted_info
 
 
-def set_user_json_instance():
+def set_user_with_json_instance():
     """Repeative lines in func for test"""
     userdata = user_sample()
     user = User(userdata)
@@ -37,11 +37,19 @@ def get_user_movies_from_json():
 
 def test_adding_movie_in_user_list():
     """Test to adding a new movie"""
-    movie = request_movie_data("Titanic")
-    user = set_user_json_instance()
+    # Test OK
+    movie = request_movie_data("The Matrix")
+    user = set_user_with_json_instance()
     user_storage = user.userdata["storage"]
     user.userdata["movie"] = movie
     user_storage.add_movie_in_user_list(user.userdata)
 
 
-test_adding_movie_in_user_list()
+def test_delete_movie_in_user_list():
+    """testing Storage delete method
+    params are self, userdata, movie_id"""
+    # Test Ok
+    movie_id = "3"
+    user = set_user_with_json_instance()
+    user_storage = user.userdata["storage"]
+    user_storage.delete_movie_in_user_list(user.userdata, movie_id)

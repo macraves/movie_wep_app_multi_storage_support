@@ -109,7 +109,8 @@ class JsonStorage(DMI):
             raise JsonStorageErrors("Not able to delete movie: user does not exist")
         movies = user.get("movies")
         if movies and len(movies) > 0:
-            if movie_id in movies:
-                del movies[movie_id]
+            if movie_id not in movies:
+                raise JsonStorageErrors("Movie id is not found to delete")
+            del movies[movie_id]
         data["users"][user_id]["movies"] = movies
         self._write_file(data)
