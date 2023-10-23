@@ -60,6 +60,7 @@ def add_user():
         user.save_record()
     except UserErrors as user_error:
         return jsonify({"User error": user_error}, 400)
+    return jsonify(user)
 
 
 if __name__ == "__main__":

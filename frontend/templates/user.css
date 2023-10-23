@@ -1,0 +1,33 @@
+/* Styling for the Users page */
+body {
+	font-family: Arial, sans-serif;
+	text-align: center;
+	background-color: #f2f2f2;
+	margin: 0;
+	padding: 0;
+}
+
+h1 {
+	background-color: #333;
+	color: #fff;
+	padding: 20px;
+}
+
+ul {
+	list-style: none;
+	padding: 0;
+}
+
+li {
+	padding: 10px;
+}
+
+a {
+	text-decoration: none;
+	color: #007bff;
+	font-weight: bold;
+}
+
+a:hover {
+	text-decoration: underline;
+}
