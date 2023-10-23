@@ -8,6 +8,13 @@ user.userdata["storage"] = JS()
 storage = user.userdata["storage"]
 uid = storage.user_unique_id()
 user.userdata = {uid: userdata}
+# print(user.userdata)
+user_info = {
+    k: {k2: v2 for k2, v2 in v.items() if k2 != "storage"}
+    for k, v in user.userdata.items()
+}
+# print(user_info)
+storage.add_new_user(user_info)
 
 
 # user.save_record()
