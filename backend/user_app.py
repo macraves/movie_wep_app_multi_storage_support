@@ -23,12 +23,3 @@ class AppApi:
         """user instance of user varible is used to get its movies list"""
         user_movies = load_user_data(self.user)
         return jsonify(user_movies)
-
-
-def test_api():
-    var = AppApi("caner")
-    var.app.add_url_rule("/api/user_movies", view_func=var.index, methods=["GET"])
-    var.app.run(debug=True)
-
-
-# test_api()

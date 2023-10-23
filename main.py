@@ -53,3 +53,15 @@ def test_delete_movie_in_user_list():
     user = set_user_with_json_instance()
     user_storage = user.userdata["storage"]
     user_storage.delete_movie_in_user_list(user.userdata, movie_id)
+
+
+def test_user_api_get():
+    """Testing Api instance"""
+    # Test Ok
+    user = set_user_with_json_instance()
+    user_app = user.get_api()
+    user_app.app.add_url_rule("/api/user", view_func=user_app.index, methods=["GET"])
+    user_app.app.run(debug=True)
+
+
+test_user_api_get()
