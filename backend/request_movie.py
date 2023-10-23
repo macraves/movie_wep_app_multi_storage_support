@@ -52,3 +52,15 @@ def get_by_name(movie_name: str) -> dict:
                 f"Error requesting page {request_api}:\n\t--> {rer}"
             ) from rer
     return None
+
+
+def extract_movie_data(movie_name):
+    """Extract Title, Director, Year, imdbRating"""
+    movie = get_by_name(movie_name)
+    extracted_movie_data = {
+        "Title": movie.get("Title"),
+        "Director": movie.get("Director", "Unknown"),
+        "Year": movie.get("Year", "Unknown"),
+        "imdbRating": movie.get("imdbRating", 0.0),
+    }
+    return extracted_movie_data

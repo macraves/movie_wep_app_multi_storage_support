@@ -88,8 +88,8 @@ class User:
     def get_id(self):
         """Adds id key to userdata dict"""
         storage = self.userdata["storage"]
-        user_id = storage.create_unique_id()
-        self.userdata["id"] = user_id
+        user_id = storage.user_unique_id()
+        self.userdata["id"] = str(user_id)
 
     def get_api(self):
         """Return API instance"""
