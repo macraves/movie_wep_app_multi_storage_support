@@ -1,10 +1,12 @@
-"""Creating User Instance, user info will be saved in registy folder
-as json file.
-from user folder to chdir to basename"""
 import os
 import json
 
-from backend.user_app import AppApi
+# Constants
+REGISTRY_FILE = "registry.json"
+MIN_USERNAME_LENGTH = 4
+MAX_USERNAME_LENGTH = 15
+MIN_PASSWORD_LENGTH = 4
+MAX_PASSWORD_LENGTH = 12
 
 
 class UserErrors(Exception):
@@ -16,45 +18,46 @@ class UserErrors(Exception):
 
 
 class User:
-    """Properties name, password be part of API instance"""
+    """Class for managing user registration and authentication."""
 
     root_dir = os.path.dirname(os.path.dirname(__file__))
     registry_dir = os.path.join(root_dir, "registry")
-    registry_file = os.path.join(registry_dir, "registry.json")
-
-    @staticmethod
-    def is_valid_userdata(userdata: dict):
-        """Validate username"""
-        password = userdata["password"]
-        if userdata["name"].strip() == "" or password.strip() == "":
-            raise UserErrors("User entry cannot be empty.")
-        if not 2 < len(userdata["name"]) < 15:
-            raise UserErrors("User entry must be between 4 and 15 characters long.")
-        if not 4 < len(password) < 6:
-            raise UserErrors("Password must be between 4 and 12 characters long.")
-        if not password.isalnum():
-            raise UserErrors("User entry must be alphanumeric.")
-        return True
-
-    @staticmethod
-    def correct_userdata(userdata: dict):
-        """Correct userdata"""
-        userdata["name"] = userdata["name"].strip()
-        userdata["password"] = str(userdata["password"]).strip()
-        return userdata
+    registry_file = os.path.join(registry_dir, REGISTRY_FILE)
 
     def __init__(self, userdata: dict):
-        """userdata = {"name": name, "password": password, "storage":"storage"}"""
+        """Initialize a User instance with userdata."""
         userdata = self.correct_userdata(userdata)
         if self.is_valid_userdata(userdata):
             self.userdata = userdata
 
-    def save_record(self):
-        """Save username and password to registry file"""
+    @staticmethod
+    def is_valid_userdata(userdata: dict):
+        """Validate user data."""
+        name = userdata["name"].strip()
+        password = str(userdata["password"]).strip()
 
+        if not MIN_USERNAME_LENGTH < len(name) < MAX_USERNAME_LENGTH:
+            raise UserErrors("Username must be between 4 and 15 characters long.")
+        if not MIN_PASSWORD_LENGTH < len(password) < MAX_PASSWORD_LENGTH:
+            raise UserErrors("Password must be between 4 and 12 characters long.")
+        if not name.isalnum():
+            raise UserErrors("Username must be alphanumeric.")
+
+        return True
+
+    @staticmethod
+    def correct_userdata(userdata: dict):
+        """Strip and normalize user data."""
+        userdata["name"] = userdata["name"].strip()
+        userdata["password"] = str(userdata["password"]).strip()
+        return userdata
+
+    def save_record(self):
+        """Save username and password to the registry file."""
         registration = {self.userdata["name"]: self.userdata["password"]}
         if not os.path.exists(self.registry_dir):
             os.makedirs(self.registry_dir)
+
         if (
             os.path.exists(self.registry_file)
             and os.path.getsize(self.registry_file) > 0
@@ -62,14 +65,17 @@ class User:
             users = self.load_records()
         else:
             users = {}
+
         if self.userdata["name"] in users:
-            raise UserErrors("Username already exist.")
+            raise UserErrors("Username already exists.")
+
         users.update(registration)
+
         with open(self.registry_file, "w", encoding="utf-8") as f:
             json.dump(users, f, indent=4)
 
     def load_records(self):
-        """Open username and password to registry file"""
+        """Load usernames and passwords from the registry file."""
         try:
             with open(self.registry_file, "r", encoding="utf-8") as f:
                 users = json.load(f)
@@ -78,24 +84,26 @@ class User:
             raise UserErrors(f"File not found.\n{err}") from err
 
     def is_password_match(self):
-        """Check if password match"""
+        """Check if the entered password matches the stored password."""
         users = self.load_records()
         if not self.userdata["name"] in users:
             return False
-        if self.userdata["password"] != users[self.userdata["name"]]:
-            return False
-        return True
+        return self.userdata["password"] == users[self.userdata["name"]]
 
-    def get_id(self):
-        """Adds id key to userdata dict"""
-        storage = self.userdata["storage"]
+    def get_id(self, storage):
+        """Add an 'id' key to the userdata dictionary."""
         user_id = storage.user_unique_id()
         self.userdata["id"] = str(user_id)
 
-    def get_api(self):
-        """Return API instance"""
-        return AppApi(self)
+    def is_there_same_username(self):
+        """Loops through all users to check if there is a dublication"""
+        users = self.userdata["storage"].get_all_users()
+        name = self.userdata["name"]
+        for user_id in users:
+            if users[user_id]["name"] == name:
+                return True
+        return False
 
     def frontend(self):
-        """Return frontend instance"""
-        print("Under the construction")
+        """Return frontend instance."""
+        print("Under construction")

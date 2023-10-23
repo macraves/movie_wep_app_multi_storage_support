@@ -12,14 +12,14 @@ class JsonStorageErrors(Exception):
 
 
 class JsonStorage(DMI):
-    """ "This class is used to store movies in a json file."""
+    """Class for storing movies in a JSON file."""
 
     def __init__(self) -> None:
         file_name = os.path.join(DMI.logs_dir, "movies.json")
         self._filename = file_name
 
     def _read_file(self):
-        """Reads data from file and returns dictionary of dictionaries"""
+        """Reads data from the JSON file and returns a dictionary."""
         try:
             with open(self._filename, "r", encoding="utf-8") as json_file:
                 data = json.load(json_file)
@@ -42,13 +42,13 @@ class JsonStorage(DMI):
         with open(self._filename, "w", encoding="utf-8") as handle:
             json.dump(data, handle, indent=4)
 
-    def find_user(self, userdata):
-        """Finds user by userdata unique id"""
+    def find_user(self, userdata: dict):
+        """Finds a user by their unique ID."""
         data = self._read_file()
         user_id = userdata["id"]
         if data["users"][user_id]["name"] == userdata["name"]:
             return data["users"].get(user_id), user_id, data
-        raise JsonStorageErrors("Cannot match id and user name")
+        raise JsonStorageErrors("Cannot match ID and user name")
 
     def get_all_users(self):
         """Get all users from storage"""
@@ -61,7 +61,7 @@ class JsonStorage(DMI):
         user, user_id, data = self.find_user(userdata)
         if user:
             return data["users"][user_id]["movies"]
-        raise JsonStorageErrors("User or list of movies does not exist")
+        return user.get("movies", {}) if user else {}
 
     def user_unique_id(self):
         """Iterate through users dictionary to find
@@ -78,7 +78,7 @@ class JsonStorage(DMI):
 
         if userdata["id"] in data["users"]:
             raise JsonStorageErrors(
-                f"User id does exist, cannot add this key {userdata['id']}"
+                f"User ID already exist, cannot add this key {userdata['id']}"
             )
         data["users"][userdata["id"]] = {
             "name": userdata.get("name"),
@@ -87,30 +87,19 @@ class JsonStorage(DMI):
         self._write_file(data)
 
     def add_movie_in_user_list(self, userdata):
-        """Find user by its id and get the size of movies list if exists to assign
-        unique key for movie user = {1: {'name': 'caner', 'movie': 'Batman'}}
-        """
+        """Add a movie to a user's list."""
         user, user_id, data = self.find_user(userdata)
-        if not user:
-            raise JsonStorageErrors("Not able add movie: user does not exist")
-        movies = user.get("movies")
-        if movies and len(movies) > 0:
-            mid = max(int(key) for key in movies) + 1
-        else:
-            movies = {}
-            mid = len(movies) + 1
-        data["users"][str(user_id)]["movies"][mid] = userdata["movie"]
+        movies = user.get("movies", {})
+        mid = max([int(key) for key in movies], default=0) + 1
+        data["users"][str(user_id)]["movies"][str(mid)] = userdata["movie"]
         self._write_file(data=data)
 
     def delete_movie_in_user_list(self, userdata, movie_id):
-        """Find user by its id and get the"""
+        """Delete a movie from a user's list."""
         user, user_id, data = self.find_user(userdata)
-        if not user:
-            raise JsonStorageErrors("Not able to delete movie: user does not exist")
-        movies = user.get("movies")
-        if movies and len(movies) > 0:
-            if movie_id not in movies:
-                raise JsonStorageErrors("Movie id is not found to delete")
-            del movies[movie_id]
+        movies = user.get("movies", {})
+        if movie_id not in movies:
+            raise JsonStorageErrors("Movie ID is not found to delete")
+        del movies[movie_id]
         data["users"][user_id]["movies"] = movies
         self._write_file(data)
