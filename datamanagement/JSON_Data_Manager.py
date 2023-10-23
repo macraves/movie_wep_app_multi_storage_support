@@ -76,7 +76,7 @@ class JsonStorage(DMI):
         data = self._read_file()
         user_id = list(user.keys())[0]
         data["users"][user_id] = {
-            "name": user[user_id],
+            "name": user[user_id]["name"],
             "movies": {},
         }
         self._write_file(data=data)
@@ -85,7 +85,7 @@ class JsonStorage(DMI):
         """Find user by its id and get the size of movies list if exists to assign
         unique key for movie user = {1: {'name': 'caner', 'movie': 'Batman'}}
         """
-        user, data, user_id = self.find_user(userdata)
+        user, user_id, data = self.find_user(userdata)
         if not user:
             raise JsonStorageErrors("Not able add movie: user does not exist")
         movies = user.get("movies")
@@ -98,7 +98,7 @@ class JsonStorage(DMI):
 
     def delete_movie_in_user_list(self, userdata):
         """Find user by its id and get the"""
-        user, data, user_id = self.find_user(userdata)
+        user, user_id, data = self.find_user(userdata)
         if not user:
             raise JsonStorageErrors("Not able to delete movie: user does not exist")
         movies = user.get("movies")
