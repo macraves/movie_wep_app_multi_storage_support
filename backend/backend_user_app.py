@@ -1,5 +1,6 @@
 """Backend for the web app."""
 import flask
+from backend.app_methods import load_user_data
 
 
 class ApiErrors(Exception):
@@ -18,7 +19,7 @@ class AppApi:
         self.user = user
 
     def index(self):
-        return f"Hello, {self.user.name}!"
+        return f"Hello, {self.user['name']}!"
 
 
 def test_api():
