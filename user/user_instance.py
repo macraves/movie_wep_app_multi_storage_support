@@ -67,7 +67,7 @@ class User:
             users = {}
 
         if self.userdata["name"] in users:
-            return "User already exists."
+            raise UserErrors("Username already exists.")
 
         user_id = self.get_id(self.userdata["storage"])
         registration[self.userdata["name"]]["id"] = user_id
@@ -92,7 +92,7 @@ class User:
         users = self.load_records()
         if not self.userdata["name"] in users:
             return False
-        return self.userdata["password"] == users[self.userdata["name"]["password"]]
+        return self.userdata["password"] == users[self.userdata["name"]]["password"]
 
     def get_id(self, storage):
         """Add an 'id' key to the userdata dictionary."""

@@ -58,10 +58,8 @@ class JsonStorage(DMI):
 
     def get_user_movies(self, userdata):
         """Get all movies for given user"""
-        user, user_id, data = self.find_user(userdata)
-        if user:
-            return data["users"][user_id]["movies"]
-        return user.get("movies", {}) if user else {}
+        data = self._read_file()
+        return data["users"][userdata["id"]]["movies"]
 
     def user_unique_id(self):
         """Iterate through users dictionary to find
@@ -70,6 +68,7 @@ class JsonStorage(DMI):
         users = data.get("users")
         if users and len(users) > 0:
             return max(int(key) for key in users.keys()) + 1
+
         return 1
 
     def add_new_user(self, userdata):
@@ -77,7 +76,7 @@ class JsonStorage(DMI):
         data = self._read_file()
         data["users"][userdata["id"]] = {
             "name": userdata.get("name"),
-            "movies": {"1": userdata.get("movie")},
+            "movies": {"1": userdata.get("movie", {})},
         }
         self._write_file(data)
 

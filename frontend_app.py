@@ -1,57 +1,75 @@
 """Frontend html template rendering"""
-# import os
-# import sys
-
-# current_dir = os.path.dirname(os.path.abspath(__file__))
-# # Add the project directory to the Python path
-# project_dir = os.path.abspath(os.path.join(current_dir, ".."))
-# sys.path.append(project_dir)
-
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, render_template, request, session, redirect, url_for
 from datamanagement.JSON_Data_Manager import JsonStorage
 from user.user_instance import User
 
 app = Flask(__name__)
-storage = JsonStorage()
+app.secret_key = "mysecretkey"
 
 
-@app.route("/users")
-def list_users():
-    """Gets storage type list of users"""
-    users = storage.get_all_users()
-    return render_template("users.html", users=users)
+@app.route("/")
+def index():
+    """Render the index page."""
+    return render_template("index.html")
 
 
-@app.route("/users/<user_id>")
-def user_movies(user_id):
-    """Gets storage type list of users"""
-    user_id = str(user_id)
-    users = storage.get_all_users()
-    if user_id in users:
-        return render_template("movies.html", movies=users[user_id]["movies"])
-    return render_template("movies.html", movies={})
-
-
-@app.route("/add_user", methods=["GET", "POST"])
-def add_user():
-    """Adds a new user"""
+@app.route("/signin", methods=["GET", "POST"])
+def signin():
+    """Render the signin page."""
     if request.method == "POST":
         name = request.form["name"]
         password = request.form["password"]
-        storage = request.form["storage"]
-        if storage == "json":
+        storage_type = request.form["storage"]
+        if storage_type.lower().strip() == "json":
             storage = JsonStorage()
         user = User({"name": name, "password": password, "storage": storage})
-        if not user.is_there_same_username():
-            user.get_id(storage)
-            user.save_record()
-            storage.add_new_user(user.userdata)
-        return redirect(url_for("list_users"))
-    return render_template("add_user.html")
+        if user.is_password_match():
+            user_info = user.load_records()
+            user_id = user_info[name]["id"]
+            user.userdata["id"] = user_id
+            users = storage.get_all_users()
+            if not user_id in users:
+                storage.add_new_user(user.userdata)
+            session["user_id"] = user_id
+            session["storage"] = storage_type
+            return redirect(url_for("movies"))
+    return render_template("signin.html")
 
 
-if __name__ == "__main__":
-    app.run(debug=True)
+@app.route("/signup", methods=["GET", "POST"])
+def signup():
+    """Render the signup page."""
+    if request.method == "POST":
+        name = request.form["name"]
+        password = request.form["password"]
+        storage_type = request.form["storage"]
+        if storage_type.lower().strip() == "json":
+            storage = JsonStorage()
+        user = User({"name": name, "password": password, "storage": storage})
+        user.save_record()
+        new_id = user.get_id(user.userdata["storage"])
+        user.userdata["id"] = new_id
+        session["user_id"] = new_id
+        session["storage"] = storage_type
+        storage.add_new_user(user.userdata)
+        return redirect(url_for("signin"))
+    return render_template("signup.html")
+
+
+@app.route("/movies")
+def movies():
+    """Render the movies page."""
+    user_id = session.get("user_id")
+    storage = session.get("storage")
+    if storage.lower().strip() == "json":
+        storage = JsonStorage()
+    if not user_id and not storage:
+        return redirect(url_for("signin"))
+    user = User(
+        {"id": user_id, "storage": storage, "name": "default", "password": "default"}
+    )
+    movies = storage.get_user_movies(user.userdata)
+    return render_template("movies.html", movies=movies)
 
 
 if __name__ == "__main__":
