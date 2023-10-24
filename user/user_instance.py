@@ -54,7 +54,7 @@ class User:
 
     def save_record(self):
         """Save username and password to the registry file."""
-        registration = {self.userdata["name"]: self.userdata["password"]}
+        registration = {self.userdata["name"]: {"password": self.userdata["password"]}}
         if not os.path.exists(self.registry_dir):
             os.makedirs(self.registry_dir)
 
@@ -67,12 +67,16 @@ class User:
             users = {}
 
         if self.userdata["name"] in users:
-            raise UserErrors("Username already exists.")
+            return "User already exists."
 
+        user_id = self.get_id(self.userdata["storage"])
+        registration[self.userdata["name"]]["id"] = user_id
+        self.userdata["id"] = user_id
         users.update(registration)
 
         with open(self.registry_file, "w", encoding="utf-8") as f:
             json.dump(users, f, indent=4)
+        return "User successfully registered."
 
     def load_records(self):
         """Load usernames and passwords from the registry file."""
@@ -88,21 +92,12 @@ class User:
         users = self.load_records()
         if not self.userdata["name"] in users:
             return False
-        return self.userdata["password"] == users[self.userdata["name"]]
+        return self.userdata["password"] == users[self.userdata["name"]["password"]]
 
     def get_id(self, storage):
         """Add an 'id' key to the userdata dictionary."""
         user_id = storage.user_unique_id()
-        self.userdata["id"] = str(user_id)
-
-    def is_there_same_username(self):
-        """Loops through all users to check if there is a dublication"""
-        users = self.userdata["storage"].get_all_users()
-        name = self.userdata["name"]
-        for user_id in users:
-            if users[user_id]["name"] == name:
-                return True
-        return False
+        return str(user_id)
 
     def frontend(self):
         """Return frontend instance."""

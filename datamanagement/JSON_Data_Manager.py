@@ -75,11 +75,6 @@ class JsonStorage(DMI):
     def add_new_user(self, userdata):
         """Creates a new user in users dictionary"""
         data = self._read_file()
-
-        if userdata["id"] in data["users"]:
-            raise JsonStorageErrors(
-                f"User ID already exist, cannot add this key {userdata['id']}"
-            )
         data["users"][userdata["id"]] = {
             "name": userdata.get("name"),
             "movies": {"1": userdata.get("movie")},
