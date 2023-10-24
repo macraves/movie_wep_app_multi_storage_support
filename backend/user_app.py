@@ -1,11 +1,11 @@
 """Backend for the web app."""
-import os
-import sys
+# import os
+# import sys
 
-current_dir = os.path.dirname(os.path.abspath(__file__))
-# Add the project directory to the Python path
-project_dir = os.path.abspath(os.path.join(current_dir, ".."))
-sys.path.append(project_dir)
+# current_dir = os.path.dirname(os.path.abspath(__file__))
+# # Add the project directory to the Python path
+# project_dir = os.path.abspath(os.path.join(current_dir, ".."))
+# sys.path.append(project_dir)
 
 from flask import Flask, jsonify, request
 from datamanagement.JSON_Data_Manager import JsonStorage as JS
@@ -15,6 +15,23 @@ storage = JS()
 
 
 app = Flask(__name__)
+
+
+def create_user_instance(user_id):
+    """Sample of user instance get its actual value by given ID
+    In future planing to add storage key that gets value as text json or csv"""
+    sample = {
+        "nama": "sample",
+        "password": "sample",
+    }
+    user = User(sample)
+    exists_users = user.load_records()
+    for name, info in exists_users.items():
+        if info["id"] == user_id:
+            user.userdata["name"] = name
+            user.userdata["password"] = info["password"]
+            return user
+    return None
 
 
 class BackendError(Exception):
@@ -54,7 +71,8 @@ def add_user():
             "storage": given_request["storage"],
         }
         user = User(request_data)
-        if user.is_there_same_username():
+        users_data = user.load_records()
+        if user.userdata["name"] in users_data:
             raise BackendError("User name already exists")
         user.get_id(user.userdata["storage"])
         user.save_record()

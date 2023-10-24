@@ -64,8 +64,10 @@ class User:
         ):
             users = self.load_records()
         else:
+            # registry.json not exists
             users = {}
-
+            with open(self.registry_file, "w", encoding="utf-8") as handle:
+                json.dump(users, handle, indent=4)
         if self.userdata["name"] in users:
             raise UserErrors("Username already exists.")
 
@@ -81,6 +83,8 @@ class User:
     def load_records(self):
         """Load usernames and passwords from the registry file."""
         try:
+            if not os.path.exists(self.registry_file):
+                self.save_record()
             with open(self.registry_file, "r", encoding="utf-8") as f:
                 users = json.load(f)
             return users

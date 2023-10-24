@@ -1,3 +1,4 @@
+"""Frontend application entry point.""" ""
 from frontend.frontend_app import app
 
 

@@ -15,7 +15,12 @@ class JsonStorage(DMI):
     """Class for storing movies in a JSON file."""
 
     def __init__(self) -> None:
+        if not os.path.exists(DMI.logs_dir):
+            os.makedirs(DMI.logs_dir)
         file_name = os.path.join(DMI.logs_dir, "movies.json")
+        if not os.path.exists(file_name):
+            with open(file_name, "w", encoding="utf-8") as initiate:
+                json.dump({"version": 1.0, "users": {}}, initiate, indent=4)
         self._filename = file_name
 
     def _read_file(self):
@@ -33,12 +38,6 @@ class JsonStorage(DMI):
         """Writes data to file expected structure is:
         {"version": version, "users": {id: {"user":user_object , "movies":{id:movie_}}}
         """
-
-        if not os.path.exists(DMI.logs_dir):
-            os.makedirs(DMI.logs_dir)
-        if not os.path.exists(self._filename):
-            with open(self._filename, "w", encoding="utf-8") as initiate:
-                json.dump({"version": 1.0, "users": {}}, initiate, indent=4)
         with open(self._filename, "w", encoding="utf-8") as handle:
             json.dump(data, handle, indent=4)
 
