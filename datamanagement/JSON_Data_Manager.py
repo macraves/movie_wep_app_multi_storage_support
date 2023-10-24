@@ -46,9 +46,7 @@ class JsonStorage(DMI):
         """Finds a user by their unique ID."""
         data = self._read_file()
         user_id = userdata["id"]
-        if data["users"][user_id]["name"] == userdata["name"]:
-            return data["users"].get(user_id), user_id, data
-        raise JsonStorageErrors("Cannot match ID and user name")
+        return data["users"].get(user_id), user_id, data
 
     def get_all_users(self):
         """Get all users from storage"""
@@ -76,7 +74,7 @@ class JsonStorage(DMI):
         data = self._read_file()
         data["users"][userdata["id"]] = {
             "name": userdata.get("name"),
-            "movies": {"1": userdata.get("movie", {})},
+            "movies": {},
         }
         self._write_file(data)
 
