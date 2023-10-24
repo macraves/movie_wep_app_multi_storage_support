@@ -86,7 +86,25 @@ class JsonStorage(DMI):
         data["users"][str(user_id)]["movies"][str(mid)] = userdata["movie"]
         self._write_file(data=data)
 
-    def delete_movie_in_user_list(self, userdata, movie_id):
+    def get_movie(self, userdata, movie_id):
+        """Get a movie from a user's list."""
+        user, user_id, data = self.find_user(userdata)
+        movies = user.get("movies", {})
+        if movie_id not in movies:
+            raise JsonStorageErrors("Movie ID is not found to delete")
+        return movies[movie_id]
+
+    def update_movie_in_user_list(self, userdata, movie_id, movie):
+        """Update a movie from a user's list."""
+        user, user_id, data = self.find_user(userdata)
+        movies = user.get("movies", {})
+        if movie_id not in movies:
+            raise JsonStorageErrors("Movie ID is not found to delete")
+        movies[movie_id] = movie
+        data["users"][user_id]["movies"] = movies
+        self._write_file(data)
+
+    def delete_movie_from_user_list(self, userdata, movie_id):
         """Delete a movie from a user's list."""
         user, user_id, data = self.find_user(userdata)
         movies = user.get("movies", {})

@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+
+{% block title %}{{ user_name }}'s Movies{% endblock %}
+
+{% block header %}Movies of {{ user_name }}{% endblock %}
+
+{% block content %}
+    <ul>
+        {% for movie_id, movie in movies.items() %}
+            <li>
+                <h2>{{ movie["Title"] }}</h2>
+                <p>Director: {{ movie["Director"] }}</p>
+                <p>Year: {{ movie["Year"] }}</p>
+                <p>IMDb Rating: {{ movie["imdbRating"] }}</p>
+                <img src="{{ movie['Poster'] }}" alt="{{ movie['Title'] }}" />
+            </li>
+        {% endfor %}
+    </ul>
+</body>
+</html>
+{% endblock %}

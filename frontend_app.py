@@ -8,6 +8,24 @@ app = Flask(__name__)
 app.secret_key = "mysecretkey"
 
 
+class FrontendErrors(Exception):
+    """Custom exception class for frontend errors."""
+
+    def __init__(self, message: str) -> None:
+        super().__init__(message)
+
+
+def get_user_info(user_id, user):
+    """provide user id name and storage information"""
+    users_data = user.load_records()
+    for name, info in users_data.items():
+        if info["id"] == user_id:
+            user.userdata["name"] = name
+            user.userdata["password"] = info["password"]
+            return user
+    return None
+
+
 @app.route("/")
 def index():
     """Render the index page."""
@@ -77,6 +95,8 @@ def list_movies():
     user = User(
         {"id": user_id, "storage": storage, "name": "default", "password": "default"}
     )
+    user = get_user_info(user_id, user)
+    session["name"] = user.userdata["name"]
     movies = storage.get_user_movies(user.userdata)
     return render_template(
         "movies.html", movies=movies, signout_link=url_for("signout")
@@ -103,12 +123,85 @@ def add_movie():
                 "password": "default",
             }
         )
+        user = get_user_info(user_id, user)
         user.userdata["movie"] = movie
         storage.add_movie_in_user_list(user.userdata)
         return redirect(url_for("list_movies"))
     if not session.get("user_id"):
         return redirect(url_for("signin"))
     return render_template("add_movie.html")
+
+
+@app.route("/users/<user_id>/update_movie/<movie_id>", methods=["GET", "POST"])
+def update_movie(user_id, movie_id):
+    """Render the update movie page."""
+    storage = session.get("storage")
+    if storage is None:
+        return redirect(url_for("signin"))
+    if storage.lower().strip() == "json":
+        storage = JsonStorage()
+    user = User(
+        {"id": user_id, "storage": storage, "name": "default", "password": "default"}
+    )
+    user = get_user_info(user_id, user)
+    movie = storage.get_movie(user.userdata, movie_id)
+    if request.method == "POST":
+        movie["Title"] = request.form["title"]
+        movie["Year"] = request.form["year"]
+        movie["Director"] = request.form["director"]
+        movie["imdbRating"] = request.form["imdbRating"]
+        storage.update_movie_in_user_list(user.userdata, movie_id, movie)
+        return redirect(url_for("list_movies"))
+    return render_template("update_movie.html", movie=movie)
+
+
+@app.route("/users/<user_id>/delete_movie/<movie_id>")
+def delete_movie(user_id, movie_id):
+    """Delete the selected movie from the user's list of favorite movies."""
+    storage = session.get("storage")
+    if storage is None:
+        return redirect(url_for("signin"))
+    if storage.lower().strip() == "json":
+        storage = JsonStorage()
+    user = User(
+        {"id": user_id, "storage": storage, "name": "default", "password": "default"}
+    )
+    user = get_user_info(user_id, user)
+    storage.delete_movie_from_user_list(user.userdata, movie_id)
+    return redirect(url_for("list_movies"))
+
+
+@app.route("/users")
+def list_users():
+    """Render the users page."""
+    storage = session.get("storage")
+    if storage is None:
+        return redirect(url_for("signin"))
+    if storage.lower().strip() == "json":
+        storage = JsonStorage()
+    users = storage.get_all_users()
+    return render_template("users.html", users=users)
+
+
+@app.route("/users/<user_id>/movies")
+def user_movies(user_id):
+    """Render a user's movie list."""
+    storage = session.get("storage")
+    if storage is None:
+        return redirect(url_for("signin"))
+    if storage.lower().strip() == "json":
+        storage = JsonStorage()
+    users = storage.get_all_users()
+
+    user = users.get(user_id)
+    if user is None:
+        return "User not found"
+
+    movies = user.get("movies", {})
+
+    return render_template(
+        "user_movies.html", user_name=user.get("name"), movies=movies, users=users
+    )
 
 
 if __name__ == "__main__":

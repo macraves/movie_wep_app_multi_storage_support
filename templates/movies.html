@@ -1,16 +1,33 @@
-<!DOCTYPE html>
-<html>
-	<head>
-		<title>Movies</title>
-	</head>
-	<body>
-		<h1>Movies</h1>
-		{% for movie_id, movie in movies.items() %} {% if movie %}
-		<h2>{{ movie["Title"] }}</h2>
-		<p>Director: {{ movie["Director"] }}</p>
-		<p>Year: {{ movie["Year"] }}</p>
-		<p>IMDb Rating: {{ movie["imdbRating"] }}</p>
-		<img src="{{ movie['Poster'] }}" alt="{{ movie['Title'] }} Poster" />
-		{% endif %} {% endfor %}
-	</body>
+{% extends "base.html" %}
+
+{% block title %}Movies{% endblock %}
+
+{% block header %}Movies{% endblock %}
+
+{% block user_info %}
+    <div class="user-info">
+        {% if session.get("name") %}
+            Welcome, {{ session.get("name").title() }}! |
+        {% endif %}
+        <a href="{{ url_for('add_movie') }}" class="add-button">Add Movie</a> | <a href="{{ url_for('list_users') }}" class="users-button">Users</a> | <a href="{{ signout_link }}">Sign Out</a>
+    </div>
+{% endblock %}
+
+{% block content %}
+    <div class="container">
+        {% for mid, info in movies.items() %}
+            <div class="card" style="width: 18rem; margin: 10px;">
+                <img src="{{ info['Poster'] }}" class="card-img-top" alt="{{info['Title'] }}" />
+                <div class="card-body">
+                    <h5 class="card-title">{{info['Title'] }}</h5>
+                    <p class="card-text">{{ info['Year'] }}</p>
+                    <p class="card-text">{{ info['imdbRating'] }}</p>
+                    <a href="{{ url_for('update_movie', user_id=session['user_id'], movie_id=mid) }}" class="update-button">Update</a>
+                    <a href="{{ url_for('delete_movie', user_id=session['user_id'], movie_id=mid) }}" class="delete-button">Delete</a>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+</body>
 </html>
+{% endblock %}

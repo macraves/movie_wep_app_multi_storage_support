@@ -1,8 +1,7 @@
-/* Styling for the Users page */
 body {
 	font-family: Arial, sans-serif;
-	text-align: center;
 	background-color: #f2f2f2;
+	text-align: center;
 	margin: 0;
 	padding: 0;
 }
@@ -11,6 +10,7 @@ h1 {
 	background-color: #333;
 	color: #fff;
 	padding: 20px;
+	font-size: 24px;
 }
 
 ul {
@@ -20,14 +20,131 @@ ul {
 
 li {
 	padding: 10px;
+	font-size: 18px;
 }
 
 a {
 	text-decoration: none;
 	color: #007bff;
 	font-weight: bold;
+	font-size: 16px;
 }
 
 a:hover {
 	text-decoration: underline;
+}
+
+.container {
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: center;
+}
+
+.card {
+	background-color: #fff;
+	border: 1px solid #ddd;
+	border-radius: 5px;
+	box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);
+	padding: 10px;
+	margin: 10px;
+	text-align: center;
+}
+
+.card-title {
+	font-size: 20px;
+}
+
+.card-text {
+	font-size: 16px;
+}
+
+form {
+	max-width: 400px;
+	margin: 0 auto;
+	padding: 20px;
+	background-color: #fff;
+	border: 1px solid #ddd;
+	border-radius: 5px;
+	box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);
+	text-align: left;
+}
+
+label {
+	display: block;
+	font-weight: bold;
+	margin-bottom: 5px;
+	font-size: 16px;
+}
+
+input[type="text"],
+input[type="password"] {
+	width: 100%;
+	padding: 10px;
+	margin-bottom: 10px;
+	border: 1px solid #ccc;
+	border-radius: 5px;
+	font-size: 16px;
+}
+
+input[type="submit"] {
+	background-color: #007bff;
+	color: #fff;
+	padding: 10px 20px;
+	border: none;
+	border-radius: 5px;
+	cursor: pointer;
+	font-weight: bold;
+	font-size: 16px;
+}
+
+input[type="submit"]:hover {
+	background-color: #0056b3;
+}
+
+.update-button,
+.add-button,
+.delete-button {
+	background-color: #007bff;
+	color: #fff;
+	padding: 5px 10px;
+	border: none;
+	border-radius: 5px;
+	cursor: pointer;
+	text-decoration: none;
+	font-weight: bold;
+	display: inline-block;
+	margin-top: 10px;
+}
+
+.update-button:hover,
+.add-button:hover,
+.delete-button:hover {
+	background-color: #0056b3;
+	text-decoration: none;
+}
+
+.signup-form {
+	max-width: 400px;
+	margin: 0 auto;
+	background-color: #fff;
+	border: 1px solid #ddd;
+	border-radius: 5px;
+	box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);
+	padding: 20px;
+	text-align: left;
+}
+
+.submit-button {
+	background-color: #007bff;
+	color: #fff;
+	padding: 10px 20px;
+	border: none;
+	border-radius: 5px;
+	cursor: pointer;
+	font-weight: bold;
+	font-size: 16px;
+}
+
+.submit-button:hover {
+	background-color: #0056b3;
 }

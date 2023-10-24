@@ -1,12 +1,29 @@
-<!-- BEGIN: be15d9bcejpp -->
-<h1>Sign Up</h1>
-<form method="POST">
-	<label for="name">Name:</label>
-	<input type="text" id="name" name="name" required /><br /><br />
-	<label for="password">Password:</label>
-	<input type="password" id="password" name="password" required /><br /><br />
-	<label for="storage">Storage:</label>
-	<input type="text" id="storage" name="storage" required /><br /><br />
-	<input type="submit" value="Sign Up" />
-</form>
-<!-- END: be15d9bcejpp -->
+{% extends "base.html" %}
+
+{% block title %}Sign Up{% endblock %}
+
+{% block header %}Sign Up{% endblock %}
+
+{% block user_info %}
+    <div class="user-info">
+        
+		Welcome, User! | <a href="{{ url_for('signout') }}">Sign Out</a>
+        
+    </div>
+{% endblock %}
+
+{% block content %}
+    
+    <h1>Sign Up</h1>
+    <form method="POST">
+        <label for="name">Name:</label>
+        <input type="text" id="name" name="name" required /><br /><br />
+        <label for="password">Password:</label>
+        <input type="password" id="password" name="password" required /><br /><br />
+        <label for="storage">Storage Type:</label>
+        <input type="text" id="storage" name="storage" required /><br /><br />
+        <input type="submit" value="Sign Up" />
+    </form>
+</body>
+</html>
+{% endblock %}
