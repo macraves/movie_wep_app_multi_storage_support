@@ -1,11 +1,19 @@
 """Frontend html template rendering"""
-from flask import Flask, render_template, request, session, redirect, url_for
-from datamanagement.JSON_Data_Manager import JsonStorage
+from flask import Flask, flash, render_template, request, session, redirect, url_for
+from frontend.movie_wtf import UserForm
+from datamanagement.json_data_manager import JsonStorage
+from datamanagement.sqlite_models import db, MYSQL_URI
 from user.user_instance import User
 from backend.request_movie import extract_movie_data
 
+
 app = Flask(__name__)
 app.secret_key = "mysecretkey"
+app.config["SQLALCHEMY_DATABASE_URI"] = MYSQL_URI
+
+db.init_app(app)
+with app.app_context():
+    db.create_all()
 
 
 class FrontendErrors(Exception):
@@ -26,10 +34,40 @@ def get_user_info(user_id, user):
     return None
 
 
+def check_errors(form):
+    """prints if there is error(s) from given form field"""
+    flash(f"Current method: {request.method}")
+    for field, errors in form.errors.items():
+        for error in errors:
+            flash(
+                f"Error in field '{getattr(form, field).label.text}': {error}",
+                "error",
+            )
+
+
+@app.route("/test", methods=["GET", "POST"])
+def test_page():
+    """Html page tester"""
+    form = UserForm()
+    data = {}
+    if form.validate_on_submit():
+        data["name"] = form.name.data
+        data["username"] = form.username.data
+        data["email"] = form.email.data
+        data["storage"] = form.storage.data
+        data["password"] = form.password.data
+        user = User(userdata=data)
+        flash(f"{user.userdata.get('name')} submited successfuly")
+    check_errors(form)
+    return render_template(
+        "test.html", title="test", name=data.get("name", None), form=form
+    )
+
+
 @app.route("/")
 def index():
     """Render the index page."""
-    return render_template("index.html")
+    return render_template("index.html", title="index")
 
 
 @app.route("/signin", methods=["GET", "POST"])

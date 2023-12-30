@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Test page</h1>
+<div class="col-4 shadow px-2">
+{% if name %}
+<h1>Hello {{ name }}</h1>
+{% else %}
+<form method="POST">
+{{ form.hidden_tag() }}
+{{ form.name.label(class="form-label") }}{{ form.name(class="form-control") }}
+{{ form.username.label(class="form-label") }}{{ form.username(class="form-control") }}
+{{ form.email.label(class="form-label") }}{{ form.email(class="form-control") }}
+{{ form.storage.label(class="form-label") }}{{ form.storage(class="form-control") }}
+{{ form.password.label(class="form-label") }}{{ form.password(class="form-control") }}
+{{ form.confirm_password.label(class="form-label") }}{{ form.confirm_password(class="form-control") }}
+{{ form.submit(class="btn btn-primary mt-2 mb-1") }}
+</form>
+{% endif %}
+
+</div>
+
+    
+</body>
+</html>
+{% endblock %}

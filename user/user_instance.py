@@ -1,3 +1,5 @@
+"""User instance where taken from html form"""
+
 import os
 import json
 
@@ -5,7 +7,7 @@ import json
 REGISTRY_FILE = "registry.json"
 MIN_USERNAME_LENGTH = 2
 MAX_USERNAME_LENGTH = 15
-MIN_PASSWORD_LENGTH = 4
+MIN_PASSWORD_LENGTH = 3
 MAX_PASSWORD_LENGTH = 12
 
 
@@ -37,9 +39,9 @@ class User:
         password = str(userdata["password"]).strip()
 
         if not MIN_USERNAME_LENGTH < len(name) < MAX_USERNAME_LENGTH:
-            raise UserErrors("Username must be between 4 and 15 characters long.")
+            raise UserErrors("Username must be between 3 and 15 characters long.")
         if not MIN_PASSWORD_LENGTH < len(password) < MAX_PASSWORD_LENGTH:
-            raise UserErrors("Password must be between 4 and 12 characters long.")
+            raise UserErrors("Password must be between 3 and 12 characters long.")
         if not name.isalnum():
             raise UserErrors("Username must be alphanumeric.")
 
@@ -48,8 +50,8 @@ class User:
     @staticmethod
     def correct_userdata(userdata: dict):
         """Strip and normalize user data."""
-        userdata["name"] = userdata["name"].strip()
-        userdata["password"] = str(userdata["password"]).strip()
+        userdata["name"] = userdata.get("name", "").strip()
+        userdata["password"] = str(userdata.get("password", "")).strip()
         return userdata
 
     def save_record(self):
