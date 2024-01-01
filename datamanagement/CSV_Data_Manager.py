@@ -1,7 +1,7 @@
 """This module is used to store movies in a json file."""
 import csv
 import json  # for test
-from datamanagement.storage_inheritance import DataManagmentInterface
+from datamanagement.storage_inheritance import os, DataManagmentInterface as DMI
 
 
 class CsvStorageErrors(Exception):
@@ -11,11 +11,17 @@ class CsvStorageErrors(Exception):
         super().__init__(message)
 
 
-class CsvStorage(DataManagmentInterface):
+class CsvStorage(DMI):
     """This class is used to store movies in a csv file."""
 
     def __init__(self, filename) -> None:
-        self._filename = filename
+        if not os.path.exists(DMI.logs_dir):
+            os.makedirs(DMI.logs_dir)
+        file_name = os.path.join(DMI.logs_dir, f"{filename}.csv")
+        if not os.path.exists(file_name):
+            with open(file_name, "w", encoding="utf-8") as initiate:
+                json.dump({"version": 1.0, "users": {}}, initiate, indent=4)
+        self._filename = file_name
 
     def _read_file(self):
         """Reads data from file and returns dictionary of dictionaries
@@ -68,9 +74,9 @@ class CsvStorage(DataManagmentInterface):
         users = data["users"]
         return users
 
-    def get_user_movies(self, user_id):
+    def get_user_movies(self, userdata):
         data = self._read_file()
-        user = data["users"][user_id]
+        user = data["users"][userdata]
         return user["movies"]
 
     def save_csv(self, data):
@@ -82,11 +88,3 @@ class CsvStorage(DataManagmentInterface):
     def load_csv(self):
         """Load csv file"""
         return self._read_file()
-
-
-def test():
-    """test for class"""
-    with open("test.json", "r", encoding="utf-8") as f:
-        data = json.load(f)
-    var = CsvStorage("test.csv")
-    var.save_csv(data)

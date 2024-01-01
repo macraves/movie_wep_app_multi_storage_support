@@ -7,7 +7,7 @@ class DataManagmentInterface(ABC):
     """Main framework for data managment"""
 
     root_dir = os.path.dirname(os.path.dirname(__file__))
-    logs_dir = os.path.join(root_dir, "logs")
+    logs_dir = os.path.join(root_dir, "data")
 
     @abstractmethod
     def get_all_users(self):

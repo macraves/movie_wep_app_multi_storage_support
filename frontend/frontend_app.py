@@ -1,15 +1,19 @@
 """Frontend html template rendering"""
 from flask import Flask, flash, render_template, request, session, redirect, url_for
 from frontend.movie_wtf import UserForm
-from datamanagement.json_data_manager import JsonStorage
-from datamanagement.sqlite_models import db, MYSQL_URI
-from user.user_instance import User
+from datamanagement.json_data_manager import JsonStorage, JsonStorageErrors
+from datamanagement.csv_data_manager import CsvStorage
+from datamanagement.sqlite_data_manager import db, SqliteStorage
+from user.user_instance import User, UserErrors
 from backend.request_movie import extract_movie_data
 
+FILE_NAME = "movies"
+SQLITE_STORAGE = SqliteStorage(FILE_NAME)
+SQLITE_STORAGE_PATH = SQLITE_STORAGE.filename
 
 app = Flask(__name__)
 app.secret_key = "mysecretkey"
-app.config["SQLALCHEMY_DATABASE_URI"] = MYSQL_URI
+app.config["SQLALCHEMY_DATABASE_URI"] = f"sqlite:///{SQLITE_STORAGE_PATH}"
 
 db.init_app(app)
 with app.app_context():
@@ -45,23 +49,16 @@ def check_errors(form):
             )
 
 
-@app.route("/test", methods=["GET", "POST"])
-def test_page():
-    """Html page tester"""
-    form = UserForm()
-    data = {}
-    if form.validate_on_submit():
-        data["name"] = form.name.data
-        data["username"] = form.username.data
-        data["email"] = form.email.data
-        data["storage"] = form.storage.data
-        data["password"] = form.password.data
-        user = User(userdata=data)
-        flash(f"{user.userdata.get('name')} submited successfuly")
-    check_errors(form)
-    return render_template(
-        "test.html", title="test", name=data.get("name", None), form=form
-    )
+def get_storage_class(storage_text, filename):
+    """Assigns class name to storage varible"""
+
+    if storage_text == "json":
+        storage = JsonStorage(filename)
+    elif storage_text == "sqlite":
+        storage = SQLITE_STORAGE
+    elif storage_text == "csv":
+        storage = CsvStorage(filename)
+    return storage
 
 
 @app.route("/")
@@ -78,7 +75,7 @@ def signin():
         password = request.form["password"]
         storage_type = request.form["storage"]
         if storage_type.lower().strip() == "json":
-            storage = JsonStorage()
+            storage = None
         user = User({"name": name, "password": password, "storage": storage})
         if user.is_password_match():
             user_info = user.load_records()
@@ -93,24 +90,50 @@ def signin():
     return render_template("signin.html")
 
 
+def json_and_csv_user(data: dict, storage: object):
+    """JSON and CSV file type integrate with User instance"""
+    try:
+        user = User(userdata=data)
+        user_with_id = user.save_record()
+        flash(f"User ID saved: {user_with_id['id']}")
+        session["user_id"] = user_with_id["id"]
+        storage.add_new_user(user.userdata)
+    except (UserErrors, JsonStorageErrors) as usererror:
+        return f"<h1>{usererror}</h1>"
+
+
 @app.route("/signup", methods=["GET", "POST"])
 def signup():
-    """Render the signup page."""
+    """Html page tester"""
+    valid_storage_extensions = ["csv", "json", "sqlite"]
+    form = UserForm()
+    data = {}
+    # Not all field of wtform are neccessary so request.method used
     if request.method == "POST":
-        name = request.form["name"]
-        password = request.form["password"]
-        storage_type = request.form["storage"]
-        if storage_type.lower().strip() == "json":
-            storage = JsonStorage()
-        user = User({"name": name, "password": password, "storage": storage})
-        user.save_record()
-        new_id = user.get_id(user.userdata["storage"])
-        user.userdata["id"] = new_id
-        session["user_id"] = new_id
-        session["storage"] = storage_type
-        storage.add_new_user(user.userdata)
-        return redirect(url_for("signin"))
-    return render_template("signup.html")
+        data["name"] = request.form.get("name")
+        data["username"] = request.form.get("username")
+        data["email"] = request.form.get("email")
+        data["storage"] = request.form.get("storage").strip().lower()
+        # storage field DataRequired:
+        if data["storage"] not in valid_storage_extensions:
+            flash("Invalid storage type, valid storage are csv, json, sqlite")
+            return render_template(
+                "test.html", title="test", name=data.get("name", None), form=form
+            )
+        data["storage"] = request.form.get("storage").strip().lower()
+        session["storage"] = data["storage"]
+        data["password"] = request.form.get("password")
+        storage = get_storage_class(session["storage"], FILE_NAME)
+        data["storage"] = storage
+        # CSV and JSON managment uses user instance
+        if session["storage"] in ["csv", "json"]:
+            json_and_csv_user(data, storage)
+        else:
+            storage.add_new_user(data)
+        flash(f"Storage type: {session['storage']}")
+    return render_template(
+        "signup.html", title="signup", name=data.get("name", None), form=form
+    )
 
 
 @app.route("/signout")
@@ -127,7 +150,7 @@ def list_movies():
     user_id = session.get("user_id")
     storage = session.get("storage")
     if storage.lower().strip() == "json":
-        storage = JsonStorage()
+        storage = None
     if not user_id and not storage:
         return redirect(url_for("signin"))
     user = User(
@@ -152,7 +175,7 @@ def add_movie():
         if not user_id and not storage:
             return redirect(url_for("signin"))
         if storage.lower().strip() == "json":
-            storage = JsonStorage()
+            storage = None
         user = User(
             {
                 "id": user_id,
@@ -177,7 +200,7 @@ def update_movie(user_id, movie_id):
     if storage is None:
         return redirect(url_for("signin"))
     if storage.lower().strip() == "json":
-        storage = JsonStorage()
+        storage = None
     user = User(
         {"id": user_id, "storage": storage, "name": "default", "password": "default"}
     )
@@ -200,7 +223,7 @@ def delete_movie(user_id, movie_id):
     if storage is None:
         return redirect(url_for("signin"))
     if storage.lower().strip() == "json":
-        storage = JsonStorage()
+        storage = None
     user = User(
         {"id": user_id, "storage": storage, "name": "default", "password": "default"}
     )
@@ -216,7 +239,7 @@ def list_users():
     if storage is None:
         return redirect(url_for("signin"))
     if storage.lower().strip() == "json":
-        storage = JsonStorage()
+        storage = None
     users = storage.get_all_users()
     return render_template("users.html", users=users)
 
@@ -228,7 +251,7 @@ def user_movies(user_id):
     if storage is None:
         return redirect(url_for("signin"))
     if storage.lower().strip() == "json":
-        storage = JsonStorage()
+        storage = None
     users = storage.get_all_users()
 
     user = users.get(user_id)

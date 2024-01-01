@@ -10,9 +10,11 @@ class UserForm(FlaskForm):
     """User related"""
 
     name = StringField("Enter your name:", validators=[DataRequired()])
-    username = StringField("Enter your username:", validators=[DataRequired()])
-    email = StringField("Email:", validators=[Optional()])
-    storage = StringField("(CSV-JSON-SQLITE) enter the stroage type")
+    username = StringField("Enter your username: (Optinal)", validators=[Optional()])
+    email = StringField("Email: (Optinal)", validators=[Optional()])
+    storage = StringField(
+        "(CSV-JSON-SQLITE) enter the stroage type", validators=[DataRequired()]
+    )
     password = PasswordField("Password", validators=[DataRequired()])
     confirm_password = PasswordField(
         "Re-enter the password",

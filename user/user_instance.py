@@ -38,9 +38,9 @@ class User:
         name = userdata["name"].strip()
         password = str(userdata["password"]).strip()
 
-        if not MIN_USERNAME_LENGTH < len(name) < MAX_USERNAME_LENGTH:
+        if not MIN_USERNAME_LENGTH <= len(name) < MAX_USERNAME_LENGTH:
             raise UserErrors("Username must be between 3 and 15 characters long.")
-        if not MIN_PASSWORD_LENGTH < len(password) < MAX_PASSWORD_LENGTH:
+        if not MIN_PASSWORD_LENGTH <= len(password) < MAX_PASSWORD_LENGTH:
             raise UserErrors("Password must be between 3 and 12 characters long.")
         if not name.isalnum():
             raise UserErrors("Username must be alphanumeric.")
@@ -54,7 +54,7 @@ class User:
         userdata["password"] = str(userdata.get("password", "")).strip()
         return userdata
 
-    def save_record(self):
+    def save_record(self) -> dict:
         """Save username and password to the registry file."""
         registration = {self.userdata["name"]: {"password": self.userdata["password"]}}
         if not os.path.exists(self.registry_dir):
@@ -71,16 +71,17 @@ class User:
             with open(self.registry_file, "w", encoding="utf-8") as handle:
                 json.dump(users, handle, indent=4)
         if self.userdata["name"] in users:
-            raise UserErrors("Username already exists.")
-
-        user_id = self.get_id(self.userdata["storage"])
+            raise UserErrors("User name already exists.")
+        storage = self.userdata["storage"]
+        user_id = self.get_id(storage, self.userdata["name"])
+        # save the user name and password in dictionary
         registration[self.userdata["name"]]["id"] = user_id
         self.userdata["id"] = user_id
         users.update(registration)
 
         with open(self.registry_file, "w", encoding="utf-8") as f:
             json.dump(users, f, indent=4)
-        return "User successfully registered."
+        return self.userdata
 
     def load_records(self):
         """Load usernames and passwords from the registry file."""
@@ -100,9 +101,9 @@ class User:
             return False
         return self.userdata["password"] == users[self.userdata["name"]]["password"]
 
-    def get_id(self, storage):
+    def get_id(self, storage, name):
         """Add an 'id' key to the userdata dictionary."""
-        user_id = storage.user_unique_id()
+        user_id = storage.user_unique_id(name)
         return str(user_id)
 
     def frontend(self):
