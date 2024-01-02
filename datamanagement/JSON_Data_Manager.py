@@ -41,78 +41,113 @@ class JsonStorage(DMI):
         with open(self._filename, "w", encoding="utf-8") as handle:
             json.dump(data, handle, indent=4)
 
-    def find_user(self, userdata: dict):
-        """Finds a user by their unique ID."""
-        data = self._read_file()
-        user_id = userdata["id"]
-        return data["users"].get(user_id), user_id, data
+    def find_user(self, name: str = None, user_id: int = None) -> dict | None:
+        """Find user by either name or user ID info then
+        extract a user form list of dictionaries by given name
+        extract a user from dictionary by given user ID
+        and returns user info as dict
 
-    def get_all_users(self):
-        """Get all users from storage"""
-        data = self._read_file()
-        users = data["users"]
-        return users
+        Args:
+            userdata (dict): user information container with keys
+            id, name, password, email(optional), storage values
+        Returns:
+            dict | None: {"id", "name", }
+        """
+        user = None
+        users = self._read_file().get("users")
+        user_list = self.get_all_users()
+        if user_id:
+            user = users.get(user_id)
+        elif name:
+            user = [user for user in user_list if user.get("name") == name]
+        return user
 
-    def get_user_movies(self, userdata: dict):
+    def get_all_users(self) -> list:
+        """Get all users as a list from storage"""
+        data = self._read_file()
+        users = data.get("users", {}).values()
+        return list(users)
+
+    def get_user_movies(self, userdata: dict) -> list | None:
         """Get all movies for given user"""
-        data = self._read_file()
-        return data["users"][userdata["id"]]["movies"]
+        user_id = userdata.get("id")
+        user = self.find_user(user_id=user_id)
+        if not user:
+            return None
+        return user.get("movies")
 
-    def user_unique_id(self, name):
+    def user_unique_id(self, name) -> int | Exception:
         """Iterate through users dictionary to find
-        max key of movie and generate max + 1"""
+        max key of movie and generate max + 1
+        if name already exist raise JsonStorageErrors"""
+        name = name.strip().lower()
         data = self._read_file()
         users = data.get("users")
-        for info in users.values():
-            if name == info["name"]:
-                raise JsonStorageErrors("User name is already in json movie database")
+        for user in users.values():
+            if name == user["name"]:
+                raise JsonStorageErrors(
+                    "JsonStorage: User name is already in json movie database"
+                )
+        return max((int(key) for key in users.keys()), default=0) + 1
 
-        if users and len(users) > 0:
-            return max(int(key) for key in users.keys()) + 1
-
-        return 1
-
-    def add_new_user(self, userdata: dict):
+    def add_new_user(self, userdata: dict) -> None | JsonStorageErrors:
         """Creates a new user in users dictionary"""
         data = self._read_file()
-        data["users"][userdata["id"]] = {
+        user = self.find_user(user_id=userdata.get("id"))
+        if user:
+            raise JsonStorageErrors("JsonStorage: User already exists")
+        data["users"][userdata.get("id")] = {
+            "id": userdata.get("id"),
             "name": userdata.get("name"),
-            "movies": {},
+            "username": userdata.get("username"),
+            "email": userdata.get("email"),
+            "movies": [],
         }
         self._write_file(data)
 
-    def add_movie_in_user_list(self, userdata):
+    def add_movie_in_user_list(self, userdata) -> bool & str:
         """Add a movie to a user's list."""
-        user, user_id, data = self.find_user(userdata)
-        movies = user.get("movies", {})
-        mid = max((int(key) for key in movies)) + 1
-        data["users"][str(user_id)]["movies"][str(mid)] = userdata["movie"]
-        self._write_file(data=data)
+        data = self._read_file()
+        user_id = userdata.get("id")
+        new_movie = userdata.get("movie")
 
-    def get_movie(self, userdata, movie_id):
-        """Get a movie from a user's list."""
-        user, _, _ = self.find_user(userdata)
-        movies = user.get("movies", {})
-        if movie_id not in movies:
-            raise JsonStorageErrors("Movie ID is not found to delete")
-        return movies[movie_id]
+        if user_id in data["users"]:
+            data["users"][user_id]["movies"].append(new_movie)
+            self._write_file(data)
+            return True, "New Movie Added Successfully"
+        return (
+            False,
+            "User ID is not valid to add new movie to the list.",
+        )
+
+    def get_target_movie(self, userdata, movie_id) -> dict | JsonStorageErrors:
+        """Get the target movie from a user's list."""
+        movies = self.get_user_movies(userdata=userdata)
+        if not movies:
+            raise JsonStorageErrors(
+                "Either User or User`s movie list given ID is not valid"
+            )
+        target_movie = next(
+            (movie for movie in movies if movie["id"] == movie_id), None
+        )
+        if not target_movie:
+            raise JsonStorageErrors("Cannot find the movie by given Movie ID")
+        return target_movie
 
     def update_movie_in_user_list(self, userdata, movie_id, movie):
         """Update a movie from a user's list."""
-        user, user_id, data = self.find_user(userdata)
-        movies = user.get("movies", {})
-        if movie_id not in movies:
-            raise JsonStorageErrors("Movie ID is not found to delete")
-        movies[movie_id] = movie
-        data["users"][user_id]["movies"] = movies
+        data = self._read_file()
+        target_movie = self.get_target_movie(userdata, movie_id)
+        target_movie.update(movie)
         self._write_file(data)
 
-    def delete_movie_from_user_list(self, userdata, movie_id):
+    def delete_movie_from_user_list(self, userdata, movie_id) -> str:
         """Delete a movie from a user's list."""
-        user, user_id, data = self.find_user(userdata)
-        movies = user.get("movies", {})
-        if movie_id not in movies:
-            raise JsonStorageErrors("Movie ID is not found to delete")
-        del movies[movie_id]
-        data["users"][user_id]["movies"] = movies
+        user_id = userdata.get("id")
+        data = self._read_file()
+        target_movie = self.get_target_movie(userdata, movie_id)
+        deleted_movie = data["users"][user_id]["movies"].pop(
+            data["users"][user_id]["movies"].index(target_movie)
+        )
         self._write_file(data)
+        return f"{deleted_movie.get('title')} deleted."

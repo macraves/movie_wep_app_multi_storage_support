@@ -3,7 +3,7 @@ from flask import Flask, flash, render_template, request, session, redirect, url
 from frontend.movie_wtf import UserForm
 from datamanagement.json_data_manager import JsonStorage, JsonStorageErrors
 from datamanagement.csv_data_manager import CsvStorage
-from datamanagement.sqlite_data_manager import db, SqliteStorage
+from datamanagement.sqlite_data_manager import db, SqliteStorage, SqliteErrors
 from user.user_instance import User, UserErrors
 from backend.request_movie import extract_movie_data
 
@@ -20,7 +20,7 @@ with app.app_context():
     db.create_all()
 
 
-class FrontendErrors(Exception):
+class FrontendError(Exception):
     """Custom exception class for frontend errors."""
 
     def __init__(self, message: str) -> None:
@@ -49,22 +49,33 @@ def check_errors(form):
             )
 
 
-def get_storage_class(storage_text, filename):
+def get_storage_class(storage_text):
     """Assigns class name to storage varible"""
-
     if storage_text == "json":
-        storage = JsonStorage(filename)
+        storage = JsonStorage(FILE_NAME)
     elif storage_text == "sqlite":
         storage = SQLITE_STORAGE
     elif storage_text == "csv":
-        storage = CsvStorage(filename)
+        storage = CsvStorage(FILE_NAME)
     return storage
+
+
+@app.route("/find_user/<int:user_id>")
+def find_user(user_id):
+    """Get storage instance to assigns the methods to find user by given user_id"""
+    storage_text = session["storage"]
+    storage = get_storage_class(storage_text)
+    try:
+        user = storage.find_user(user_id)
+    except SqliteErrors as error:
+        user = error
+    return render_template("index.html", title="Find User", warning=user)
 
 
 @app.route("/")
 def index():
     """Render the index page."""
-    return render_template("index.html", title="index")
+    return render_template("index.html", title=None, warning=None)
 
 
 @app.route("/signin", methods=["GET", "POST"])
@@ -98,8 +109,9 @@ def json_and_csv_user(data: dict, storage: object):
         flash(f"User ID saved: {user_with_id['id']}")
         session["user_id"] = user_with_id["id"]
         storage.add_new_user(user.userdata)
-    except (UserErrors, JsonStorageErrors) as usererror:
-        return f"<h1>{usererror}</h1>"
+    except (UserErrors, JsonStorageErrors) as user_or_json:
+        return False, str(user_or_json.message)
+    return True, None
 
 
 @app.route("/signup", methods=["GET", "POST"])
@@ -110,26 +122,39 @@ def signup():
     data = {}
     # Not all field of wtform are neccessary so request.method used
     if request.method == "POST":
-        data["name"] = request.form.get("name")
-        data["username"] = request.form.get("username")
-        data["email"] = request.form.get("email")
+        data["name"] = request.form.get("name").strip().lower()
+        data["username"] = request.form.get("username").strip()
+        data["email"] = request.form.get("email").strip()
         data["storage"] = request.form.get("storage").strip().lower()
         # storage field DataRequired:
         if data["storage"] not in valid_storage_extensions:
             flash("Invalid storage type, valid storage are csv, json, sqlite")
+
             return render_template(
-                "test.html", title="test", name=data.get("name", None), form=form
+                "signup.html", title="Re-enter", name=data.get("name", None), form=form
             )
-        data["storage"] = request.form.get("storage").strip().lower()
+
         session["storage"] = data["storage"]
-        data["password"] = request.form.get("password")
-        storage = get_storage_class(session["storage"], FILE_NAME)
+        data["password"] = request.form.get("password").strip()
+        storage = get_storage_class(session["storage"])
         data["storage"] = storage
         # CSV and JSON managment uses user instance
         if session["storage"] in ["csv", "json"]:
-            json_and_csv_user(data, storage)
+            registered, message = json_and_csv_user(data, storage)
+            if not registered:
+                return render_template("index.html", title="error", warning=message)
         else:
-            storage.add_new_user(data)
+            try:
+                storage.add_new_user(data)
+                if not registered:
+                    return render_template(
+                        "index.html", title="WARNING!", warning=message
+                    )
+
+            except SqliteErrors as sqlite_er:
+                return render_template(
+                    "index.html", title="WARNING!", warning=sqlite_er
+                )
         flash(f"Storage type: {session['storage']}")
     return render_template(
         "signup.html", title="signup", name=data.get("name", None), form=form
@@ -235,11 +260,8 @@ def delete_movie(user_id, movie_id):
 @app.route("/users")
 def list_users():
     """Render the users page."""
-    storage = session.get("storage")
-    if storage is None:
-        return redirect(url_for("signin"))
-    if storage.lower().strip() == "json":
-        storage = None
+    storage = get_storage_class(session.get("storage"))
+
     users = storage.get_all_users()
     return render_template("users.html", users=users)
 
@@ -263,6 +285,19 @@ def user_movies(user_id):
     return render_template(
         "user_movies.html", user_name=user.get("name"), movies=movies, users=users
     )
+
+
+# Custom Errors
+@app.errorhandler(404)
+def page_not_found(e):
+    """Page not found error"""
+    return render_template("index.html", title="404 Error", warning=e), 404
+
+
+@app.errorhandler(500)
+def internal_server_error(e):
+    """Page not found error"""
+    return render_template("index.html", title="500 Error", warning=e), 500
 
 
 if __name__ == "__main__":

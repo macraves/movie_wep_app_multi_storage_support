@@ -1,16 +1,11 @@
-{% extends "base.html" %}
+{% extends "base.html" %} {% block content %} {% if warning %}
 
-{% block title %}Welcome to Movie Web{% endblock %}
+<h4>{{ warning }}</h4>
+{% else %}
 
-{% block header %}Welcome to Movie Web{% endblock %}
+<ul>
+	<li><a href="/signin">Sign In</a></li>
+	<li><a href="/signup">Sign Up</a></li>
+</ul>
 
-{% block content %}
-    <nav>
-        <ul>
-            <li><a href="/signin">Sign In</a></li>
-            <li><a href="/signup">Sign Up</a></li>
-        </ul>
-    </nav>
-</body>
-</html>
-{% endblock %}
+{% endif %} {% endblock %}

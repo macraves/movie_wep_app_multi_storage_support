@@ -6,7 +6,7 @@ import json
 # Constants
 REGISTRY_FILE = "registry.json"
 MIN_USERNAME_LENGTH = 2
-MAX_USERNAME_LENGTH = 15
+MAX_USERNAME_LENGTH = 100
 MIN_PASSWORD_LENGTH = 3
 MAX_PASSWORD_LENGTH = 12
 
@@ -28,35 +28,27 @@ class User:
 
     def __init__(self, userdata: dict):
         """Initialize a User instance with userdata."""
-        userdata = self.correct_userdata(userdata)
         if self.is_valid_userdata(userdata):
             self.userdata = userdata
 
     @staticmethod
     def is_valid_userdata(userdata: dict):
         """Validate user data."""
-        name = userdata["name"].strip()
-        password = str(userdata["password"]).strip()
+        name = userdata["name"]
+        password = str(userdata["password"])
 
         if not MIN_USERNAME_LENGTH <= len(name) < MAX_USERNAME_LENGTH:
             raise UserErrors("Username must be between 3 and 15 characters long.")
         if not MIN_PASSWORD_LENGTH <= len(password) < MAX_PASSWORD_LENGTH:
             raise UserErrors("Password must be between 3 and 12 characters long.")
-        if not name.isalnum():
-            raise UserErrors("Username must be alphanumeric.")
+        if name.isdigit():
+            raise UserErrors("Username must be alphabetical.")
 
         return True
 
-    @staticmethod
-    def correct_userdata(userdata: dict):
-        """Strip and normalize user data."""
-        userdata["name"] = userdata.get("name", "").strip()
-        userdata["password"] = str(userdata.get("password", "")).strip()
-        return userdata
-
     def save_record(self) -> dict:
         """Save username and password to the registry file."""
-        registration = {self.userdata["name"]: {"password": self.userdata["password"]}}
+
         if not os.path.exists(self.registry_dir):
             os.makedirs(self.registry_dir)
 
@@ -70,11 +62,13 @@ class User:
             users = {}
             with open(self.registry_file, "w", encoding="utf-8") as handle:
                 json.dump(users, handle, indent=4)
+
         if self.userdata["name"] in users:
             raise UserErrors("User name already exists.")
         storage = self.userdata["storage"]
         user_id = self.get_id(storage, self.userdata["name"])
         # save the user name and password in dictionary
+        registration = {self.userdata["name"]: {"password": self.userdata["password"]}}
         registration[self.userdata["name"]]["id"] = user_id
         self.userdata["id"] = user_id
         users.update(registration)
@@ -104,7 +98,7 @@ class User:
     def get_id(self, storage, name):
         """Add an 'id' key to the userdata dictionary."""
         user_id = storage.user_unique_id(name)
-        return str(user_id)
+        return user_id
 
     def frontend(self):
         """Return frontend instance."""
