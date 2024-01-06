@@ -1,15 +1,29 @@
-{% extends "base.html" %}
+{% extends "base.html" %} {% block content %}
+<h2>Current user {{ current_user | title }}; checking all users name</h2>
 
-{% block title %}Users{% endblock %}
+{% if users %}
 
-{% block header %}Users{% endblock %}
+<div class="col-4">
+	<table class="table table-striped">
+		{% for user in users %}
+		<tr>
+			<td>
+				<div class="d-flex justify-content-between align-items-start">
+					<a href="{{ url_for('user_movies', user_id=user.id)}}"
+						><h5>{{ user.name}}</h5></a
+					>
+					<div>
+						<a href="#" class="btn btn-primary mx-1">Update</a>
+						<a href="#" class="btn btn-danger mx-1">Delete</a>
+					</div>
+				</div>
+			</td>
+		</tr>
+		{% endfor %}
+	</table>
+</div>
 
-{% block content %}
-<ul>
-    {% for user_id, user in users.items() %}
-	<li><a href="{{ url_for('user_movies', user_id=user_id) }}">{{ user.name }}</a></li>
-    {% endfor %}
-</ul>
-</body>
-</html>
-{% endblock %}
+{% else %}
+<br /><br />
+<h5>User List is empty</h5>
+{% endif %} {% endblock %}

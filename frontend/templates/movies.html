@@ -1,40 +1,36 @@
-{% extends "base.html" %}
+{% extends "base.html" %} {% block content %}
+<h2>{{ user_name | title }} Movie List:</h2>
+<a href="{{ url_for('add_movie')}}" class="btn btn-primary">Add New Movie</a>
+{% if movies %}
+<div class="row mt-5 shadow">
+	{% for movie in movies %}
+	<div class="card text-center" style="width: 18rem">
+		<h5 class="card-title">{{ movie.Title}}</h5>
 
-{% block title %}Movies{% endblock %}
+		<img
+			src="{{ movie.Poster}}"
+			class="img-fluid fixed-height border rounded"
+			alt="{{ movie.Title}}"
+		/>
 
-{% block header %}Movies{% endblock %}
-
-{% block user_info %}
-    <div class="user-info">
-        {% if session.get("name") %}
-            Welcome, {{ session.get("name").title() }}! |
-        {% endif %}
-        <a href="{{ url_for('add_movie') }}" class="add-button">Add Movie</a> | <a href="{{ url_for('list_users') }}" class="users-button">Users</a> | <a href="{{ signout_link }}">Sign Out</a>
-    </div>
-{% endblock %}
-
-{% block content %}
-    <div class="row">
-        {% for mid, info in movies.items() %}
-            <div class="col-2 shadow">
-                <img src="{{ info['Poster'] }}" class="card-img-top" alt="{{info['Title'] }}" />
-                <div class=" card card-body mb-3">
-                    <ul class="list-group list-group-flush">
-                        <li class="list-group-item "><h5 class="card-title">{{info['Title'] }}</h5></li>
-                        <li class="list-group-item"><p class="card-text">{{ info['Year'] }}</p></li>
-                        <li class="list-group-item">{{ info['imdbRating'] }}</li>
-                        <li class="list-group-item"><a href="{{ url_for('update_movie', user_id=session['user_id'], movie_id=mid) }}" class="update-button">Update</a>
-                            <a href="{{ url_for('delete_movie', user_id=session['user_id'], movie_id=mid) }}" class="delete-button">Delete</a></li>
-                    </ul>
-                </div>
-            </div>
-        {% endfor %}
-    </div>
-</body>
-</html>
-{% endblock %}
-                    
-                        
-                        
-                          
-                      
+		<div class="card-body">
+			<div class="card-text">{{ movie.Year }}</div>
+			<div class="card-text">Rated {{ movie.imdbRating }}</div>
+			<a
+				href="{{ url_for('update_movie',user_id=user_id,movie_id=movie.id)}}"
+				class="btn btn-primary"
+				>Update</a
+			>
+			<a
+				href="{{ url_for('delete_movie',user_id=user_id,movie_id=movie.id) }}"
+				class="btn btn-danger"
+				>Delete</a
+			>
+		</div>
+	</div>
+	{% endfor %}
+</div>
+{% else %}
+<br /><br />
+<h5>Movie List is empty</h5>
+{% endif %} {% endblock %}

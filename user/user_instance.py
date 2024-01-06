@@ -29,7 +29,14 @@ class User:
     def __init__(self, userdata: dict):
         """Initialize a User instance with userdata."""
         if self.is_valid_userdata(userdata):
+            self.id = userdata.get("id")
             self.userdata = userdata
+            self.name = userdata.get("name")
+            self.username = userdata.get("username")
+            self.email = userdata.get("email")
+            self.storage = userdata.get("username")
+            self.password = userdata.get("password")
+            self.str = "json"
 
     @staticmethod
     def is_valid_userdata(userdata: dict):
@@ -62,7 +69,7 @@ class User:
             users = {}
             with open(self.registry_file, "w", encoding="utf-8") as handle:
                 json.dump(users, handle, indent=4)
-
+        # checking registry.json for unique name
         if self.userdata["name"] in users:
             raise UserErrors("User name already exists.")
         storage = self.userdata["storage"]
@@ -88,7 +95,7 @@ class User:
         except (FileNotFoundError, json.JSONDecodeError) as err:
             raise UserErrors(f"File not found.\n{err}") from err
 
-    def is_password_match(self):
+    def verify_password(self) -> bool:
         """Check if the entered password matches the stored password."""
         users = self.load_records()
         if not self.userdata["name"] in users:

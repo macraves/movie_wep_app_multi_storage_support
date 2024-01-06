@@ -1,25 +1,9 @@
-{% extends "base.html" %}
-
-{% block title %}Add Movie{% endblock %}
-
-{% block header %}Add Movie{% endblock %}
-
-{% block user_info %}
-    <div class="user-info">
-        {% if session.get("name") %}
-            Welcome, {{ session.get("name").title() }}! | <a href="{{ url_for('signout') }}">Sign Out</a>
-        {% endif %}
-    </div>
-{% endblock %}
-
-{% block content %}
-    <h1>Add Movie</h1>
-    <form method="POST">
-        <label for="movie_name">Movie Name:</label>
-        <input type="text" id="movie_name" name="movie_name" required />
-        <br />
-        <button type="submit">Add Movie</button>
-    </form>
-</body>
-</html>
+{% extends "base.html" %} {% block content %} {% if message %} {{ message }} {% endif %}
+<h1>Add Movie</h1>
+<div class="col-4 shadow px-2">
+	<form method="POST">
+		{{ form.hidden_tag() }} {{ form.title.label(class="form-label")}} {{
+		form.title(class="form-control")}} {{ form.submit(class="btn btn-primary mt-2 mb-2")}}
+	</form>
+</div>
 {% endblock %}

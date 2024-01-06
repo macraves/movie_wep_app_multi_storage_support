@@ -59,7 +59,6 @@ def extract_movie_data(movie_name):
     movie = get_by_name(movie_name)
     extracted_movie_data = {
         "Title": movie.get("Title"),
-        "Director": movie.get("Director", "Unknown"),
         "Year": movie.get("Year", "Unknown"),
         "imdbRating": movie.get("imdbRating", 0.0),
         "Poster": movie.get("Poster", "Unknown"),
