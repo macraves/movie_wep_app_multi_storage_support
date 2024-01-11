@@ -25,6 +25,11 @@
 				class="btn btn-danger"
 				>Delete</a
 			>
+			<a
+				href="{{ url_for('add_review', user_id=movie.adder.id, movie_id=movie.id)}}"
+				class="btn btn-warning"
+				>Add Review</a
+			>
 		</div>
 	</div>
 	{% endfor %}

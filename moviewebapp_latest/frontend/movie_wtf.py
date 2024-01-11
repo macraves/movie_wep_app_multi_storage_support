@@ -64,4 +64,5 @@ class SigninForm(FlaskForm):
 class ReviewForm(FlaskForm):
     """Form for review"""
 
-    content = StringField("Review", validators=[Optional], widget=TextArea)
+    content = StringField("Review", validators=[Optional()], widget=TextArea())
+    submit = SubmitField("Add Review")

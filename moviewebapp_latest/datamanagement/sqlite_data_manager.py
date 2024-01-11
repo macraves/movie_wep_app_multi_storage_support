@@ -2,7 +2,7 @@
 from sqlalchemy import exc
 from datamanagement.sqlite_models import db
 from datamanagement.storage_inheritance import os, DataManagmentInterface as DMI
-from datamanagement.sqlite_models import User, Movie
+from datamanagement.sqlite_models import User, Movie, Review
 
 
 class SqliteErrors(Exception):
@@ -28,6 +28,20 @@ class SqliteStorage(DMI):
         if user is None:
             return False
         return user.verify_password(password)
+
+    def add_review(self, form, user, movie_id):
+        """Uses ORM relationship to create Review instance"""
+        content = form.content.data
+        movie = self.get_target_movie(user_id=user.id, movie_id=movie_id)
+        review = Review(user_id=movie.adder.id, movie_id=movie.id, review_text=content)
+
+        db.session.add(review)
+        db.session.commit()
+
+    def all_revies(self):
+        """Display all reviews for sqlite database"""
+        revies = Review.query.order_by(Review.id).all()
+        return revies
 
     def find_user(self, username: str = None, user_id: int = None) -> User | None:
         """Query for SQL to find user by id"""

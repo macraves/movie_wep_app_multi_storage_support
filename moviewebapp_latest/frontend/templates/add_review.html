@@ -1,0 +1,41 @@
+{% extends "base.html" %} {% block content %}
+<h2>ID : {{ movie.adder.id }}, {{ movie.adder.name }} Movie Info:</h2>
+<a href="{{ url_for('dashboard')}}" class="btn btn-outline-secondary">Back</a>
+{% if movie %}
+<div class="row mt-5 shadow">
+	<div class="card text-center" style="width: 18rem">
+		<h5 class="card-title">{{ movie.Title}}</h5>
+
+		<img
+			src="{{ movie.Poster}}"
+			class="img-fluid fixed-height border rounded"
+			alt="{{ movie.Title}}"
+		/>
+
+		<div class="card-body">
+			<div class="card-text">{{ movie.Year }}</div>
+			<div class="card-text">Rated {{ movie.imdbRating }}</div>
+			<a
+				href="{{ url_for('update_movie',user_id=movie.adder.id,movie_id=movie.id)}}"
+				class="btn btn-primary"
+				>Update</a
+			>
+			<a
+				href="{{ url_for('delete_movie',user_id=movie.adder.id,movie_id=movie.id) }}"
+				class="btn btn-danger"
+				>Delete</a
+			>
+		</div>
+	</div>
+	<div class="col-8">
+		<form method="POST">
+			{{ form.hidden_tag() }} {{ form.content.label(class="form-label") }} {{
+			form.content(class="form-control",rows=10)}} {{ form.submit(class="btn btn-primary
+			mt-2")}}
+		</form>
+	</div>
+</div>
+{% else %}
+<br /><br />
+<h5>Movie List is empty</h5>
+{% endif %} {% endblock %}

@@ -19,8 +19,10 @@ class User(db.Model, UserMixin):
     date_added = db.Column(db.DateTime, default=datetime.utcnow)
     password_hash = db.Column(db.String(128), nullable=False)
     # user have many movie in its list
-    movies = db.relationship("Movie", backref="adder", lazy=True, cascade="all,delete")
-    reviews = db.relationship("Review", backref="reviewer", lazy=True, cascade="all,delete")
+    movies = db.relationship("Movie", backref="user", lazy=True, cascade="all,delete")
+    reviews = db.relationship(
+        "Review", backref="reviewer", lazy=True, cascade="all,delete"
+    )
 
     @property
     def password(self):
@@ -54,7 +56,7 @@ class Movie(db.Model):
     Poster = db.Column(db.String(250), nullable=True)
     # Relationship with
     user_id = db.Column(db.Integer, db.ForeignKey("users.id"))
-    reviews = db.relationship("Review", backref="adder", lazy=True, cascade="all,delete")
+    reviews = db.relationship("Review", backref="view", lazy=True, cascade="all,delete")
 
     def __repr__(self):
         """Model representation"""
@@ -63,8 +65,9 @@ class Movie(db.Model):
 
 class Review(db.Model):
     """Record table of user`s review"""
+
     __tablename__ = "reviews"
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey("users.id"))
     movie_id = db.Column(db.Integer, db.ForeignKey("movies.id"))
-    review_text = db.Columns(db.Text)
+    review_text = db.Column(db.Text)

@@ -8,7 +8,8 @@ from flask_login import (
     logout_user,
     current_user,
 )
-
+from datamanagement.sqlite_data_manager import db
+from backend.request_movie import extract_movie_data, RequestErrors
 import frontend.forms_and_session_methods as ffasm
 from frontend.movie_wtf import (
     UserForm,
@@ -16,9 +17,8 @@ from frontend.movie_wtf import (
     MovieForm,
     MovieUpdateForm,
     SigninForm,
+    ReviewForm,
 )
-from datamanagement.sqlite_data_manager import db
-from backend.request_movie import extract_movie_data, RequestErrors
 
 
 app = Flask(__name__)
@@ -37,7 +37,7 @@ login_manger.init_app(app)
 login_manger.login_view = "signin"
 
 
-def check_errors(form):
+def check_html_state(form):
     """prints if there is error(s) from given form field"""
     flash(f"Checking Current method {request.method}")
     for field, errors in form.errors.items():
@@ -54,6 +54,39 @@ def load_user(user_id):
     storage_str = ffasm.session["user"].get("storage")
     storage = ffasm.get_storage_class(storage_text=storage_str)
     return storage.find_user(user_id=user_id)
+
+
+@app.route("/add_review/movie/<int:movie_id>", methods=["GET", "POST"])
+def add_review(movie_id):
+    """routes only accept if chosen storage SqliteStorage type"""
+    storage_type = ffasm.session["user"].get("storage")
+    user, storage = ffasm.get_user_and_storage()
+    # to get User instance as db.Model
+    user = storage.find_user(user_id=user.get("id"))
+    # Only sqlite type storage can add review
+    if storage_type != "sqlite":
+        abort(404, description="Only sqlite type storage can add review")
+    if user is None:
+        abort(404, description="User ID is not recognized")
+    if current_user.id != user.id:
+        abort(404, description="Not authorized to access")
+    movie = storage.get_target_movie(user_id=user.id, movie_id=movie_id)
+    if not movie:
+        abort(404, description="Invalid movie ID")
+    form = ReviewForm()
+    if form.validate_on_submit():
+        storage.add_review(form, user, movie_id)
+        flash("Form submitted")
+        return redirect(f"/users/{user.id}/movies")
+    return render_template("add_review.html", movie=movie, form=form)
+
+
+@app.route("/all-reviews")
+def all_reviews():
+    """Display all record in reviews table"""
+    _, storage = ffasm.get_user_and_storage()
+    reviews = storage.all_revies()
+    return render_template("all_reviews.html", reviews=reviews)
 
 
 @app.route("/dashboard")
@@ -102,7 +135,6 @@ def signup():
             return redirect(url_for("signin"))
         except ffasm.IMPORTED_ERRORS as import_er:
             return render_template("index.html", title="WARNING!", warning=import_er)
-    check_errors(form=form)
     return render_template(
         "signup.html", title="signup", name=data.get("name", None), form=form
     )

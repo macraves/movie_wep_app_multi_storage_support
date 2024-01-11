@@ -1,0 +1,29 @@
+{% extends "base.html" %} {% block content %}
+<div class="d-flex">
+	<table class="table table-striped">
+		{% for review in reviews %}
+		<tr>
+			<td>
+				<div class="row col-10">
+					<div class="col-10" id="view-text">
+						<strong
+							>Review ID:{{ review.id}} added by {{ review.reviewer.name }} (User ID: {{
+							review.reviewer.id }}) about Movie title
+							<a
+								href="{{ url_for('movie_info',user_id=review.reviewer.id,movie_id=review.view.id)}}"
+								>{{ review.view.Title }}</a
+							>
+							(Movie ID: {{ review.view.id}})</strong
+						>
+						<p>{{ review.review_text }}</p>
+					</div>
+					<div class="col-2">
+						<img src="{{ review.view.Poster }}" alt="img" />
+					</div>
+				</div>
+			</td>
+		</tr>
+		{% endfor %}
+	</table>
+</div>
+{% endblock%}
