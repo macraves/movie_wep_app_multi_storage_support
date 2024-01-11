@@ -1,0 +1,11 @@
+{% extends "base.html" %} {% block content %} {% if warning %}
+
+<h4>{{ warning }}</h4>
+{% else %}
+
+<ul>
+	<li><a href="/signin">Sign In</a></li>
+	<li><a href="/signup">Sign Up</a></li>
+</ul>
+
+{% endif %} {% endblock %}

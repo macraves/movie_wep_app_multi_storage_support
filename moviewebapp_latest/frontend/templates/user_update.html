@@ -1,0 +1,32 @@
+{% extends "base.html" %} {% block content %} {% if current_user.id == user.id %}
+<h1>Fill The Form to Update</h1>
+<div class="col-4 shadow px-2">
+	<a href="{{ url_for('dashboard')}}" class="btn btn-outline-secondary">Back</a>
+	<form method="POST">
+		{{ form.hidden_tag() }}
+		<div>
+			{{ form.name.label(class="form-label")}}{{form.name(class="form-control",
+			value=user.name) }}
+		</div>
+		<div>
+			{{ form.username.label(class="form-label") }}{{form.username(class="form-control",
+			value=user.username) }}
+		</div>
+		<div>
+			{{ form.email.label(class="form-label")
+			}}{{form.email(class="form-control",value=user.email) }}
+		</div>
+		<div>
+			{{ form.password.label(class="form-label")}}{{form.password(class="form-control") }}
+		</div>
+
+		{{ form.submit(class="btn btn-primary mt-2 mb-1") }}
+	</form>
+</div>
+{% else %}
+<div class="d-flex justify-content-center">
+	<h3>Not allowed</h3>
+
+	<a href="{{ url_for('signin') }}" class="btn btn-warning ml-2">Click to loggin</a>
+</div>
+{% endif %} {% endblock %}

@@ -1,0 +1,9 @@
+{% extends "base.html" %} {% block content %} {% if message %} {{ message }} {% endif %}
+<h1>Add Movie</h1>
+<div class="col-4 shadow px-2">
+	<form method="POST">
+		{{ form.hidden_tag() }} {{ form.title.label(class="form-label")}} {{
+		form.title(class="form-control")}} {{ form.submit(class="btn btn-primary mt-2 mb-2")}}
+	</form>
+</div>
+{% endblock %}

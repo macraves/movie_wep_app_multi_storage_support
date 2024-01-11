@@ -1,0 +1,22 @@
+.fixed-height {
+	height: 400px;
+	object-fit: cover;
+}
+
+.add-margin {
+	margin-top: 10px;
+	margin-bottom: 10px;
+	margin-left: 10px;
+	margin-right: 10px;
+}
+
+#dash-text {
+	font-style: italic;
+	font-weight: bold;
+}
+
+#set-middle {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+}

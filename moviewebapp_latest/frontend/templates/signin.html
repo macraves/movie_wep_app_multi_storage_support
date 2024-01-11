@@ -1,0 +1,14 @@
+{% extends "base.html" %} {% block content %}
+<h1>Sign IN</h1>
+
+<div class="col-4 rounded shadow px-2 p-5">
+	<form method="POST">
+		{{ form.hidden_tag() }} {{ form.username.label(class="form-label") }} {{
+		form.username(class="form-control") }} {{ form.password.label(class="form-label") }}
+		{{ form.password(class="form-control")}} {{ form.storage.label(class="form-label") }}
+		{{ form.storage(class="form-control")}} {{ form.submit(class="btn btn-primary mt-2
+		nb-1")}}
+	</form>
+</div>
+
+{% endblock %}

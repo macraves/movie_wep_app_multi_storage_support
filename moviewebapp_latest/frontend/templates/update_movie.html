@@ -1,0 +1,14 @@
+{% extends "base.html" %} {% block content %}
+
+<h1>Fill The Form to Update Movie Info</h1>
+<div class="col-4 shadow px-2">
+	<form method="POST">
+		{{ form.hidden_tag() }} {{ form.title.label(class="form-label")
+		}}{{form.title(class="form-control", value=movie.Title) }} {{
+		form.year.label(class="form-label") }}{{ form.year(class="form-control",
+		value=movie.Year) }} {{ form.rate.label(class="form-label") }}{{
+		form.rate(class="form-control", value=movie.imdbRating) }} {{ form.submit(class="btn
+		btn-primary mt-2 mb-1") }}
+	</form>
+</div>
+{% endblock %}

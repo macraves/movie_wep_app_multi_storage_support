@@ -1,0 +1,49 @@
+{% extends "base.html" %} {% block content %}
+<div class="col-6 border warning bg-light p-3" id="dash-text">
+	<div class="card">
+		<div class="card-header">{{ current_user.name }} Dashboard</div>
+		<div class="card-body">
+			<h5 class="card-title">You can manage your account here</h5>
+			<div class="card-text">
+				<div><strong>Name:</strong> {{ current_user.name }}</div>
+				<div><strong>Username:</strong> {{ current_user.username }}</div>
+				<div><strong>Email:</strong> {{ current_user.email }}</div>
+				<div><strong>Joined:</strong> {{ current_user.date_added }}</div>
+			</div>
+			<div>
+				<a href="{{ url_for('signout')}}" class="btn btn-outline-secondary my-2"
+					>Sign Out</a
+				>
+				<a
+					href="{{ url_for('user_update', user_id=current_user.id)}}"
+					class="btn btn-outline-primary my-2"
+					>Update</a
+				>
+				<a
+					href="{{ url_for('user_delete', user_id=current_user.id)}}"
+					class="btn btn-outline-danger my-2"
+					>Delete</a
+				>
+			</div>
+		</div>
+	</div>
+</div>
+<div class="col-6 border warning bg-light mt-2 p-3" id="dash-text">
+	<div class="card">
+		<div class="card-header" id="set-middle">{{ current_user.name}} Movies</div>
+		<div class="card-body">
+			<h5 class="card-title" id="set-middle">Click to go movie page</h5>
+			<div class="card-text">
+				{% for movie in movies %}
+				<div>
+					Movie Title:
+					<a href="{{ url_for('movie_info',user_id=current_user.id,movie_id=movie.id)}}"
+						>{{ movie.Title }}</a
+					>
+				</div>
+				{% endfor %}
+			</div>
+		</div>
+	</div>
+</div>
+{% endblock %}
