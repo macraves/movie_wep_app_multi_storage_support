@@ -107,6 +107,13 @@ class JsonStorage(DMI):
         del data["users"][str(user_id)]
         self._write_file(data)
 
+    def get_all_users(self):
+        """returns storage saved user records"""
+        users = self._read_file().get("users", None)
+        if users is None:
+            users = []
+        return list(users.values())
+
     def get_user_movies(self, user_id: int) -> list | None:
         """Get all movies for given user"""
         data = self._read_file()

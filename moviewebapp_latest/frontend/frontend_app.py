@@ -68,7 +68,7 @@ def add_review(movie_id):
         abort(404, description="Only sqlite type storage can add review")
     if user is None:
         abort(404, description="User ID is not recognized")
-    if current_user.id != user.id:
+    if str(current_user.id) != str(user.id):
         abort(404, description="Not authorized to access")
     movie = storage.get_target_movie(user_id=user.id, movie_id=movie_id)
     if not movie:
@@ -94,7 +94,7 @@ def all_reviews():
 def dashboard():
     """User Information view"""
     _, storage = ffasm.get_user_and_storage()
-    movies = storage.get_user_movies(user_id=current_user.id)
+    movies = storage.get_user_movies(user_id=str(current_user.id))
     if movies is None:
         movies = []
     return render_template("dashboard.html", movies=movies)
@@ -292,7 +292,7 @@ def update_movie(user_id, movie_id):
 @login_required
 def delete_movie(user_id, movie_id):
     """Delete the selected movie from the user's list of favorite movies."""
-    if current_user.id != user_id:
+    if str(current_user.id) != str(user_id):
         return render_template(
             "index.html", title="WARNING!", warning="You are not allowed"
         )

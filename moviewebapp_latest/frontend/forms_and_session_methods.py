@@ -45,6 +45,8 @@ def get_storage_class(storage_text):
 def get_user_and_storage():
     """Session object user and storage key values"""
     user = session.get("user")
+    if not user:
+        return None, SQLITE_STORAGE
     storage_text = session.get("user").get("storage")
     storage = get_storage_class(storage_text)
     return user, storage
