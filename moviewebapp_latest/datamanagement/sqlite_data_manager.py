@@ -52,21 +52,17 @@ class SqliteStorage(DMI):
             return User.query.filter_by(username=username).first()
         return None
 
-    def update_user_info(self, user_id, form: dict):
+    def update_user_info(self, user_id, form):
         """Update user infor with OREM"""
-        userdata = {
-            "name": form.name.data.title().strip(),
-            "username": form.username.data.strip(),
-            "email": form.email.data.strip(),
-            "password": form.password.data.strip(),
-        }
-        if not self.check_password(user_id=user_id, password=userdata.get("password")):
+        # For Apis form instance convert to dict object
+        form_data = form.data
+        user = self.find_user(user_id=user_id)
+        if not self.check_password(user_id=user_id, password=form_data.get("password")):
             raise SqliteErrors("Invalid Password")
         # Getting userdata as user instance
-        user = self.find_user(user_id=user_id)
-        user.name = userdata.get("name", user.name)
-        user.username = userdata.get("username", user.username)
-        user.email = userdata.get("email", user.email)
+        user.name = form_data.get("name", user.name)
+        user.username = form_data.get("username", user.username)
+        user.email = form_data.get("email", user.email)
         try:
             db.session.commit()
         except Exception as exc_er:
@@ -76,7 +72,7 @@ class SqliteStorage(DMI):
 
     def delete_user_info(self, user_id, form):
         """Update user infor with OREM"""
-        userdata = {"password": form.password.data.strip()}
+        userdata = form.data
         if not self.check_password(user_id=user_id, password=userdata["password"]):
             raise SqliteErrors("Invalid Password")
         user = self.find_user(user_id=user_id)

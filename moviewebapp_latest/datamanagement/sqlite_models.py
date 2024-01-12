@@ -39,6 +39,15 @@ class User(db.Model, UserMixin):
         """Verify user password"""
         return check_password_hash(self.password_hash, password)
 
+    def to_dict(self):
+        """Returns dict representation of instance"""
+        return {
+            "id": self.id,
+            "name": self.name,
+            "username": self.username,
+            "email": self.email,
+        }
+
     def __repr__(self):
         """Model representation"""
         return f"name: {self.name} username: {self.username}"
@@ -57,6 +66,15 @@ class Movie(db.Model):
     # Relationship with
     user_id = db.Column(db.Integer, db.ForeignKey("users.id"))
     reviews = db.relationship("Review", backref="view", lazy=True, cascade="all,delete")
+
+    def to_dict(self):
+        """Dictionary representation"""
+        return {
+            "id": self.id,
+            "Title": self.Title,
+            "Year": self.Year,
+            "Rate": self.imdbRating,
+        }
 
     def __repr__(self):
         """Model representation"""

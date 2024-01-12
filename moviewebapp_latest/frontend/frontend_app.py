@@ -32,9 +32,9 @@ with app.app_context():
 migrate = Migrate(app, db)
 
 # Flask Login Set-Up
-login_manger = LoginManager()
-login_manger.init_app(app)
-login_manger.login_view = "signin"
+login_manager = LoginManager()
+login_manager.init_app(app)
+login_manager.login_view = "signin"
 
 
 def check_html_state(form):
@@ -48,7 +48,7 @@ def check_html_state(form):
             )
 
 
-@login_manger.user_loader
+@login_manager.user_loader
 def load_user(user_id):
     """Gets flask sessin object user key to assing storage type"""
     storage_str = ffasm.session["user"].get("storage")
